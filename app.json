@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "puppy-potty-pal",
+    "name": "Puppy Potty Pal",
     "slug": "puppy-potty-pal",
+    "scheme": "puppy-potty-pal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "package": "com.puppypottypal"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +24,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
