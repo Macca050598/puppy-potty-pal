@@ -16,6 +16,7 @@
     "expo-av": "^14.0.6",
     "expo-constants": "~16.0.2",
     "expo-linking": "~6.3.1",
+    "expo-notifications": "^0.28.15",
     "expo-router": "~3.5.20",
     "expo-status-bar": "~1.12.1",
     "nativewind": "^2.0.11",

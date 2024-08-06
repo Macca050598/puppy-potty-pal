@@ -3,13 +3,13 @@ import { View, Text, Modal, TouchableOpacity, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getUserDogs, getDogToiletEvents, addToiletEvent } from '../lib/appwrite'; // Adjust path as needed
 
+import CustomDropdown from './CustomDropdown.jsx';
+import { predictNextTrip } from '../utils/tripPrediction.jsx';
 
- 
-
-const AddToiletTrip = ({ isVisible, onClose, onAddTrip, dogs = [] }) => {
+const AddToiletTrip = ({ isVisible, onClose, onAddTrip = [] }) => {
   const [selectedDog, setSelectedDog] = useState(null);
-  const [type, setType] = useState('wee');
-  const [location, setLocation] = useState('outside');
+  const [type, setType] = useState('');
+  const [location, setLocation] = useState('');
   const [timestamp, setTimestamp] = useState(new Date());
   const [associatedDog, setDogs] = useState([]);
   const [events, setEvents] = useState([]);
@@ -18,6 +18,12 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, dogs = [] }) => {
   useEffect(() => {
     loadDogs();
   }, []);
+
+  useEffect(() => {
+    if (isVisible) {
+      setTimestamp(new Date());
+    }
+  }, [isVisible]);
 
   const loadDogs = async () => {
     try {
@@ -41,24 +47,37 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, dogs = [] }) => {
     }
   };
 
-  const handleAddTrip = async (dogId, type, location, timestamp) => {
-    try {
-      const newEvent = await addToiletEvent(dogId, type, location, timestamp);
-      setEvents([newEvent, ...events]);
-    } catch (error) {
-      console.error('Failed to save event:', error);
-    }
-  };
+//   const handleAddTrip = async (dogId, type, location, timestamp) => {
+//     try {
+//       const newEvent = await addToiletEvent(dogId, type, location, timestamp);
+//       setEvents([newEvent, ...events]);
+//       await predictNextTrip(dogId);
+//     } catch (error) {
+//       console.error('Failed to save event:', error);
+//     }
+//   };
 
   const handleDogAdded = (newDog) => {
     setDogs([...associatedDog, newDog]);
   };
 
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedDog) {
-      onAddTrip(selectedDog, type, location, timestamp);
-      onClose();
+      try {
+        // Call onAddTrip and wait for it to complete
+        await onAddTrip(selectedDog.$id, type, location, timestamp);
+        
+        // After successfully adding the trip, predict the next trip
+        await predictNextTrip(selectedDog.$id);
+        
+        // Close the modal
+        onClose();
+      } catch (error) {
+        console.error('Failed to add trip or predict next trip:', error);
+        // You might want to show an error message to the user here
+        alert('Failed to add trip. Please try again.');
+      }
     } else {
       // Show an error or alert that a dog must be selected
       alert('Please select a dog');
@@ -66,11 +85,11 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, dogs = [] }) => {
   };
 
   const onChangeTime = (event, selectedDate) => {
-    const currentDate = selectedDate || timestamp;
-    setShowTimePicker(Platform.OS === 'ios');
-    setTimestamp(currentDate);
+    setShowTimePicker(false);
+    if (selectedDate) {
+      setTimestamp(selectedDate);
+    }
   };
-
 
   const typeOptions = [
     { label: 'Wee', value: 'wee' },
@@ -131,27 +150,27 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, dogs = [] }) => {
 
           <Text style={{ marginBottom: 5 }}>Time:</Text>
           <TouchableOpacity 
-            style={{ 
-              borderWidth: 1, 
-              borderColor: '#ccc', 
-              borderRadius: 5, 
-              padding: 10, 
-              marginBottom: 15 
-            }}
-            onPress={() => setShowTimePicker(true)}
-          >
-            <Text>{timestamp.toLocaleTimeString()}</Text>
-          </TouchableOpacity>
+        style={{ 
+          borderWidth: 1, 
+          borderColor: '#ccc', 
+          borderRadius: 5, 
+          padding: 10, 
+          marginBottom: 15 
+        }}
+        onPress={() => setShowTimePicker(true)}
+      >
+        <Text>{timestamp.toLocaleTimeString()}</Text>
+      </TouchableOpacity>
 
-          {showTimePicker && (
-            <DateTimePicker
-              value={timestamp}
-              mode="time"
-              is24Hour={true}
-              display="default"
-              onChange={onChangeTime}
-            />
-          )}
+      {showTimePicker && (
+        <DateTimePicker
+          value={timestamp}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={onChangeTime}
+        />
+      )}
 
           <View style={{
             flexDirection: 'row',
@@ -173,7 +192,7 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, dogs = [] }) => {
               style={{
                 borderRadius: 5,
                 padding: 10,
-                backgroundColor: '#4CAF50',
+                backgroundColor: '#FF9C01',
                 width: '45%',
               }} 
               onPress={handleSubmit}
@@ -188,60 +207,4 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, dogs = [] }) => {
 };
 
 
-// Custom Drop down
-const CustomDropdown = ({ options, selectedValue, onSelect, label }) => {
-    const [isOpen, setIsOpen] = useState(false);
-  
-    return (
-      <View style={{ marginBottom: 15 }}>
-        <Text style={{ marginBottom: 5 }}>{label}:</Text>
-        <TouchableOpacity
-          style={{
-            borderWidth: 1,
-            borderColor: '#ccc',
-            borderRadius: 5,
-            padding: 10,
-            backgroundColor: 'white',
-          }}
-          onPress={() => setIsOpen(true)}
-        >
-          <Text>{options.find(opt => opt.value === selectedValue)?.label || 'Select'}</Text>
-        </TouchableOpacity>
-        <Modal visible={isOpen} transparent animationType="fade">
-          <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          }}>
-            <View style={{
-              backgroundColor: 'white',
-              borderRadius: 10,
-              padding: 10,
-              width: '80%',
-              maxHeight: '50%',
-            }}>
-              <FlatList
-                data={options}
-                keyExtractor={(item) => item.value}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }}
-                    onPress={() => {
-                      onSelect(item.value);
-                      setIsOpen(false);
-                    }}
-                  >
-                    <Text>{item.label}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-  
-              
-            </View>
-          </View>
-        </Modal>
-      </View>
-    );
-  };
 export default AddToiletTrip;
