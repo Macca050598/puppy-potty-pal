@@ -13,6 +13,7 @@ const Social = () => {
 
   const {data: posts, refetch} = useAppwrite(getAllPosts);
   const {data: latestPosts} = useAppwrite(getLatestPosts);
+
   const [refreshing, setRefreshing] = useState(false)
 
   const onRefresh = async () => {
@@ -26,7 +27,11 @@ const Social = () => {
       data={posts}
       keyExtractor={(item) => item.$id}
       renderItem={({item}) => (
-        <VideoCard video={item}/>
+        <VideoCard title={item.title}
+        thumbnail={item.thumbnail}
+        video={item.video}
+        creator={item.creator.username}
+        avatar={item.creator.avatar}/>
       )}
       ListHeaderComponent={() => (
         <View className="my-6 px-4 space-y-6">
@@ -48,7 +53,7 @@ const Social = () => {
 
           <View className="w-full flex-1 pt-5 pb-8">
           <Text className="text-gray-100 text-lg font-pregular mb-3">
-            Latest Videos
+            Latest Posts
           </Text>
           <Trending posts={latestPosts ?? []} />
           </View>

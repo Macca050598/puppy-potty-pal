@@ -14,6 +14,7 @@ module.exports = {
           DEFAULT: "#000",
           100: "#1E1E2D",
           200: "#232533",
+          9152: 'rgba(0, 0, 0, 0.1)'
         },
         gray: {
           100: "#CDCDE0",
@@ -30,6 +31,11 @@ module.exports = {
         pextrabold: ["Poppins-ExtraBold", "sans-serif"],
         pblack: ["Poppins-Black", "sans-serif"],
       },
+    },
+  },
+  variants: {
+    extend: {
+      backgroundOpacity: ['responsive', 'hover', 'focus', 'active'],
     },
   },
   plugins: [],
