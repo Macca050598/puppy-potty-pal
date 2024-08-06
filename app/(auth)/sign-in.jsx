@@ -25,10 +25,10 @@ const SignIn = () => {
           
           const result = await signIn(form.email, form.password)
 
-          setUser(result);
-          setIsLogged(result);
+          // setUser(result);
+          // setIsLogged(result);
           Alert.alert("Success", "User Signed in successfully!")
-          router.replace('/home')
+          router.replace('/social')
       } catch (error) {
         Alert.alert('Error', error.message)
       } finally {

@@ -30,7 +30,7 @@ const SignUp = () => {
           setUser(result);
           setIsLogged(result);
           Alert.alert("Success", "User Signed up successfully!")
-          router.replace('/home')
+          router.replace('/social')
       } catch (error) {
         Alert.alert('Error', error.message)
       } finally {
