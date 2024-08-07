@@ -4,10 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getUserDogs, getDogToiletEvents, addToiletEvent } from '../../lib/appwrite'; // Adjust path as needed
 import AddNewDog from '../../components/AddNewDog';
 import AddToiletTrip from '../../components/AddToiletTrip';
-import { useNavigation } from 'expo-router';
-import CustomButton from '../../components/CustomButton';
 import NextTripPrediction from '../../utils/NextTripPrediction';
-import { ScrollView } from 'react-native';
+import EditDog from '../../components/EditDog';
+import { StatusBar } from 'expo-status-bar';
 const Home = () => {
   const [dogs, setDogs] = useState([]);
   const [selectedDog, setSelectedDog] = useState(null);
@@ -15,6 +14,8 @@ const Home = () => {
   const [isAddDogModalVisible, setIsAddDogModalVisible] = useState(false);
   const [isAddTripModalVisible, setIsAddTripModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isEditDogModalVisible, setIsEditDogModalVisible] = useState(false);
+  const [selectedDogForEdit, setSelectedDogForEdit] = useState();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -81,30 +82,33 @@ const Home = () => {
     setSelectedDog(newDog);
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.welcomeText}>Welcome Back</Text>
-            <Text style={styles.companyName}>MJWeb Ltd.</Text>
-          </View>
-          <TouchableOpacity onPress={() => setIsAddDogModalVisible(true)} style={styles.addDogButton}>
-            <Text style={styles.addDogButtonText}>Add Dog</Text>
-          </TouchableOpacity>
+  const renderHeader = () => (
+    <>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.welcomeText}>Welcome Back</Text>
+          <Text style={styles.companyName}>MJWeb Ltd.</Text>
         </View>
-        
-        <TouchableOpacity onPress={() => setIsAddTripModalVisible(true)} style={styles.addTripButton}>
-          <Text style={styles.addTripButtonText}>Add Trip</Text>
+        <TouchableOpacity onPress={() => setIsAddDogModalVisible(true)} style={styles.addDogButton}>
+          <Text style={styles.addDogButtonText}>Add Dog</Text>
         </TouchableOpacity>
-        
-        <FlatList
+      </View>
+      
+      <TouchableOpacity onPress={() => setIsAddTripModalVisible(true)} style={styles.addTripButton}>
+        <Text style={styles.addTripButtonText}>Add Trip</Text>
+      </TouchableOpacity>
+     
+      <FlatList
           horizontal
           data={dogs}
           keyExtractor={(item) => item.$id}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => setSelectedDog(item)}
+              onLongPress={() => {
+                setSelectedDogForEdit(item);
+                setIsEditDogModalVisible(true);
+              }}
               style={[
                 styles.dogItem,
                 selectedDog && selectedDog.$id === item.$id ? styles.selectedDogItem : null
@@ -115,19 +119,24 @@ const Home = () => {
           )}
           style={styles.dogList}
         />
+            </>
+  );
 
-        <FlatList
-          data={events}
-          keyExtractor={(item) => item.$id}
-          renderItem={({ item }) => (
-            <View style={styles.eventItem}>
-              <Text style={styles.eventText}>{`${item.type} - ${item.location}`}</Text>
-              <Text style={styles.eventText}>{new Date(item.timestamp).toLocaleString()}</Text>
-            </View>
-          )}
-          ListEmptyComponent={<Text style={styles.emptyText}>No toilet trips recorded yet.</Text>}
-        />
-      </ScrollView>
+  return (
+    <SafeAreaView className="bg-primary h-full">
+      <FlatList
+        data={events}
+        keyExtractor={(item) => item.$id}
+        renderItem={({ item }) => (
+          <View style={styles.eventItem}>
+            <Text style={styles.eventText}>{`${item.type} - ${item.location}`}</Text>
+            <Text style={styles.eventText}>{new Date(item.timestamp).toLocaleString()}</Text>
+          </View>
+        )}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={<Text style={styles.emptyText}>No toilet trips recorded yet.</Text>}
+        contentContainerStyle={styles.scrollContent}
+      />
 
       <View style={styles.predictionContainer}>
         <NextTripPrediction selectedDog={selectedDog} />
@@ -144,11 +153,34 @@ const Home = () => {
         onAddTrip={handleAddTrip}
         dogs={dogs}
       />
-    </SafeAreaView>
-  );
-};
+
+     <EditDog
+        isVisible={isEditDogModalVisible}
+        onClose={() => setIsEditDogModalVisible(false)}
+        onDogUpdated={(updatedDog) => {
+          setDogs(dogs.map(dog => dog.$id === updatedDog.$id ? updatedDog : dog));
+          if (selectedDog && selectedDog.$id === updatedDog.$id) {
+            setSelectedDog(updatedDog);
+          }
+        }}
+        onDogDeleted={(deletedDogId) => {
+          setDogs(dogs.filter(dog => dog.$id !== deletedDogId));
+          if (selectedDog && selectedDog.$id === deletedDogId) {
+            setSelectedDog(null);
+          }
+        }}
+        dogId={selectedDogForEdit ? selectedDogForEdit.$id : null}
+      />
+      <StatusBar backgroundColor='#161622' style='light'/>
+          </SafeAreaView>
+        );
+      };
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100, // Add extra padding at the bottom for the prediction
+  },
   container: {
     flex: 1,
     backgroundColor: '#1E1E1E', // Adjust to match your primary background color
@@ -229,7 +261,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(30, 30, 30, 0.9)', // Semi-transparent background
+    backgroundColor: 'rgba(22, 22, 34, 0.9)', // Semi-transparent background
     padding: 10,
   },
 });

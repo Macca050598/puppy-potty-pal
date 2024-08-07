@@ -1,76 +1,102 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { predictNextTrip } from '../utils/tripPrediction';
 
 const NextTripPrediction = ({ selectedDog }) => {
-  const [nextPredictedTrip, setNextPredictedTrip] = useState(null);
+  const [predictedInterval, setPredictedInterval] = useState(null);
   const [predictionError, setPredictionError] = useState(null);
+  const [lastTripTime, setLastTripTime] = useState(null);
 
-  useEffect(() => {
-    updatePrediction();
-  }, [selectedDog]);
-
-  const updatePrediction = async () => {
+  const updatePrediction = useCallback(async () => {
     if (selectedDog) {
       try {
-        const prediction = await predictNextTrip(selectedDog.$id);
-        if (prediction) {
-          setNextPredictedTrip(prediction);
+        const { interval, lastTrip } = await predictNextTrip(selectedDog.$id);
+        if (interval) {
+          setPredictedInterval(interval);
+          setLastTripTime(lastTrip);
           setPredictionError(null);
         } else {
-          setNextPredictedTrip(null);
+          setPredictedInterval(null);
+          setLastTripTime(null);
           setPredictionError("Not enough data to predict next trip yet.");
         }
       } catch (error) {
         console.error('Failed to predict next trip:', error);
-        setNextPredictedTrip(null);
+        setPredictedInterval(null);
+        setLastTripTime(null);
         setPredictionError("Error predicting next trip. Please try again.");
       }
     } else {
-      setNextPredictedTrip(null);
+      setPredictedInterval(null);
+      setLastTripTime(null);
       setPredictionError(null);
     }
-  };
+  }, [selectedDog]);
+
+  useEffect(() => {
+    updatePrediction();
+  }, [updatePrediction]);
 
   if (!selectedDog) {
     return null;
   }
 
+  const getNextTripTime = () => {
+    if (!predictedInterval || !lastTripTime) return null;
+    const now = new Date();
+    const lastTrip = new Date(lastTripTime);
+    let nextTrip = new Date(lastTrip.getTime() + predictedInterval);
+    while (nextTrip <= now) {
+      nextTrip = new Date(nextTrip.getTime() + predictedInterval);
+    }
+    return nextTrip;
+  };
+
+  const formatPrediction = (date) => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
+  const nextTripTime = getNextTripTime();
+
   return (
     <View style={styles.predictionContainer}>
       <Text style={styles.predictionTitle}>Next Predicted Toilet Trip:</Text>
-      {nextPredictedTrip ? (
-        <Text style={styles.predictionText}>{new Date(nextPredictedTrip).toLocaleString()}</Text>
+      {nextTripTime ? (
+        <Text style={styles.predictionText}>
+          {selectedDog.name} might need to go out at {formatPrediction(nextTripTime)}
+        </Text>
       ) : (
-        <Text style={styles.predictionError}>{predictionError || "Unable to predict next trip."}</Text>
+        <Text style={styles.predictionError}>
+          {predictionError || `Unable to predict ${selectedDog.name}'s next trip.`}
+        </Text>
       )}
     </View>
   );
 };
 
-// ... styles remain the same ...
-
-
 const styles = StyleSheet.create({
   predictionContainer: {
-    marginTop: 20,
-    padding: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 10,
     borderRadius: 5,
+    marginTop: 10,
   },
   predictionTitle: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+    color: 'white',
     marginBottom: 5,
   },
   predictionText: {
-    color: '#4CAF50',
     fontSize: 14,
+    color: '#4CAF50',
   },
   predictionError: {
-    color: '#FFA500',
     fontSize: 14,
+    color: '#FFA500',
   },
 });
 

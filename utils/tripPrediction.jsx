@@ -1,6 +1,19 @@
-import { Alert } from 'react-native';
 import { getDogToiletEvents } from '../lib/appwrite';
 import { scheduleNotification } from './notifications';
+
+const TIME_BLOCKS = {
+  MORNING: 0,
+  AFTERNOON: 1,
+  EVENING: 2,
+  NIGHT: 3
+};
+
+const getTimeBlock = (hour) => {
+  if (hour >= 5 && hour < 12) return TIME_BLOCKS.MORNING;
+  if (hour >= 12 && hour < 17) return TIME_BLOCKS.AFTERNOON;
+  if (hour >= 17 && hour < 22) return TIME_BLOCKS.EVENING;
+  return TIME_BLOCKS.NIGHT;
+};
 
 export const predictNextTrip = async (dogId) => {
   try {
@@ -8,37 +21,24 @@ export const predictNextTrip = async (dogId) => {
 
     if (recentTrips.length < 2) {
       console.log("Not enough data to predict next trip");
-      return null;
+      return { interval: null, lastTrip: null };
     }
 
-    const timeDiffs = [];
+    // Calculate average time between trips
+    let totalTimeBetween = 0;
     for (let i = 1; i < recentTrips.length; i++) {
-      const diff = new Date(recentTrips[i-1].timestamp) - new Date(recentTrips[i].timestamp);
-      timeDiffs.push(diff);
+      const timeDiff = new Date(recentTrips[i-1].timestamp) - new Date(recentTrips[i].timestamp);
+      totalTimeBetween += timeDiff;
     }
+    const avgTimeBetween = totalTimeBetween / (recentTrips.length - 1);
 
-    const avgDiff = timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length;
-
-    const lastTripTime = new Date(recentTrips[0].timestamp);
-    let predictedNextTrip = new Date(lastTripTime.getTime() + avgDiff);
-
-    // If the predicted time is in the past, set it to 5 minutes from now
-    const now = new Date();
-    if (predictedNextTrip <= now) {
-      predictedNextTrip = new Date(now.getTime() + 5 * 60000); // 5 minutes from now
-    }
-
-    try {
-      await scheduleNotification(dogId, predictedNextTrip);
-    } catch (notificationError) {
-      console.error("Failed to schedule notification:", notificationError);
-      // Continue execution even if notification scheduling fails
-    }
-
-    return predictedNextTrip;
+    return {
+      interval: avgTimeBetween,
+      lastTrip: recentTrips[0].timestamp
+    };
 
   } catch (error) {
-    console.error("Error predicting next trip:", error);
-    return null;
+    console.error("Error predicting next trip interval:", error);
+    return { interval: null, lastTrip: null };
   }
 };

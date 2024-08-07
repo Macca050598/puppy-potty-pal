@@ -8,7 +8,7 @@ import EmptyState from '../../components/EmptyState'
 import { getAllPosts, getLatestPosts } from '../../lib/appwrite'
 import useAppwrite from '../../lib/useAppwrite'
 import VideoCard from '../../components/VideoCard'
-
+import { StatusBar } from 'expo-status-bar'
 const Social = () => {
 
   const {data: posts, refetch} = useAppwrite(getAllPosts);
@@ -67,6 +67,8 @@ const Social = () => {
     )}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       />
+
+    <StatusBar backgroundColor='#161622' style='light'/>
     </SafeAreaView>
   );
 };

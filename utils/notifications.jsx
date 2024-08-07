@@ -13,7 +13,7 @@ export const scheduleNotification = async (dogId, predictedTime) => {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: "Time for a Toilet Trip",
-      body: "Your dog might need to go out soon!",
+      body: `${dogId} might need to go out soon!`,
     },
     trigger: predictedTime,
     identifier: `dog-${dogId}`,

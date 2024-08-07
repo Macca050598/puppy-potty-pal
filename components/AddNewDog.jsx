@@ -1,39 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, Button, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { addDog, getCurrentUser } from '../lib/appwrite'; // Adjust the import path as needed
 
 const AddNewDog = ({ isVisible, onClose, onDogAdded }) => {
   const [newDogName, setNewDogName] = useState('');
   const [newDogBreed, setNewDogBreed] = useState('');
-  const [newDogDOB, setNewDogDOB] = useState('');
+  const [newDogDOB, setNewDogDOB] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dobError, setDobError] = useState('');
 
   const handleAddDog = async () => {
     try {
-      // Validate and parse the date of birth
-      const parsedDate = new Date(newDogDOB);
-      if (isNaN(parsedDate.getTime())) {
-        setDobError('Invalid date format.');
-        return;
-      }
-      const formattedDate = parsedDate.toISOString();
-
-      // Fetch the current user's ID
+      const formattedDate = newDogDOB.toISOString();
       const currentUser = await getCurrentUser();
       if (currentUser && currentUser.$id) {
-        const userId = currentUser.$id; // Access the user ID
-
-        // Add the new dog and link it to the current user
-        const newDog = await addDog(userId, newDogName, newDogBreed, formattedDate, newDogDOB);
+        const userId = currentUser.$id;
+        const newDog = await addDog(userId, newDogName, newDogBreed, formattedDate);
         onDogAdded(newDog);
         onClose();
-        
-        // Reset form
         setNewDogName('');
         setNewDogBreed('');
-        setNewDogDOB('');
+        setNewDogDOB(new Date());
         setDobError('');
       } else {
         throw new Error('No current user found');
@@ -47,60 +35,107 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded }) => {
   const onChangeDOB = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      setNewDogDOB(selectedDate.toISOString().split('T')[0]); // Format date to yyyy-MM-dd
+      setNewDogDOB(selectedDate);
     }
   };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
-     <View
-      style={{
+    <Modal visible={isVisible} animationType="fade" transparent={true}>
+      <View style={{
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Black background with 30% opacity
-      }}
-    >
-        <View className="bg-white p-5 rounded-lg w-4/5">
-          <Text className="text-xl font-semibold mb-4">Add New Dog</Text>
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      }}>
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: 20,
+          padding: 20,
+          width: '80%',
+          maxWidth: 300,
+        }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>Add New Dog</Text>
+          
           <TextInput
-            className="border border-gray-300 p-2 rounded mb-4"
+            style={{
+              borderWidth: 1,
+              borderColor: '#ccc',
+              borderRadius: 5,
+              padding: 10,
+              marginBottom: 15,
+            }}
             placeholder="Dog Name"
             value={newDogName}
             onChangeText={setNewDogName}
           />
+
           <TextInput
-            className="border border-gray-300 p-2 rounded mb-4"
+            style={{
+              borderWidth: 1,
+              borderColor: '#ccc',
+              borderRadius: 5,
+              padding: 10,
+              marginBottom: 15,
+            }}
             placeholder="Dog Breed"
             value={newDogBreed}
             onChangeText={setNewDogBreed}
           />
-       
-       <TouchableOpacity 
-            onPress={() => setShowDatePicker(true)} 
-            className="border border-gray-300 p-2 rounded mb-4"
+
+          <Text style={{ marginBottom: 5 }}>Date of Birth:</Text>
+          <TouchableOpacity 
+            style={{ 
+              borderWidth: 1, 
+              borderColor: '#ccc', 
+              borderRadius: 5, 
+              padding: 10, 
+              marginBottom: 15 
+            }}
+            onPress={() => setShowDatePicker(true)}
           >
-            <Text>{newDogDOB ? newDogDOB : 'Choose Date'}</Text>
+            <Text>{newDogDOB.toLocaleDateString()}</Text>
           </TouchableOpacity>
+
           {showDatePicker && (
             <DateTimePicker
-              value={new Date(newDogDOB || Date.now())}
+              value={newDogDOB}
               mode="date"
               display="default"
               onChange={onChangeDOB}
             />
           )}
+
           {dobError ? (
-            <Text className="text-red-500 mb-4">{dobError}</Text>
+            <Text style={{ color: 'red', marginBottom: 15 }}>{dobError}</Text>
           ) : null}
-          <View className="flex-row justify-around">
-            <Button title="Cancel" onPress={onClose} />
-            <Button title="Add Dog" onPress={handleAddDog} />
+
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginTop: 20,
+          }}>
+            <TouchableOpacity 
+              style={{
+                borderRadius: 5,
+                padding: 10,
+                backgroundColor: '#ccc',
+                width: '45%',
+              }} 
+              onPress={onClose}
+            >
+              <Text style={{ color: 'black', fontWeight: 'bold', textAlign: 'center' }}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={{
+                borderRadius: 5,
+                padding: 10,
+                backgroundColor: '#FF9C01',
+                width: '45%',
+              }} 
+              onPress={handleAddDog}
+            >
+              <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Add Dog</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

@@ -28,7 +28,7 @@ const SignIn = () => {
           // setUser(result);
           // setIsLogged(result);
           Alert.alert("Success", "User Signed in successfully!")
-          router.replace('/social')
+          router.replace('/home')
       } catch (error) {
         Alert.alert('Error', error.message)
       } finally {
