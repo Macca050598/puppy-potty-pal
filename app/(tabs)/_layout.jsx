@@ -29,6 +29,7 @@ const TabsLayout = () => {
     tabBarActiveTintColor: '#FFA001',
     tabBarInactiveTintColor: '#CDCDE0',
     tabBarStyle: {
+        paddingTop: 2,
         backgroundColor: '#161622',
         borderTopWidth: 1,
         borderTopColor: '#232533',
@@ -44,7 +45,7 @@ const TabsLayout = () => {
         headerShown: false,
         tabBarIcon: ({ color, focused}) => (
             <TabIcon 
-            icon={icons.bookmark} 
+            icon={icons.home} 
             color={color}
             name="Home"
             focused={focused}
@@ -61,7 +62,7 @@ const TabsLayout = () => {
         headerShown: false,
         tabBarIcon: ({ color, focused}) => (
             <TabIcon 
-            icon={icons.home} 
+            icon={icons.bookmark} 
             color={color}
             name="Social"
             focused={focused}
@@ -72,7 +73,7 @@ const TabsLayout = () => {
 
 
 
-{/*  */}
+{/* 
 <Tabs.Screen 
     name="create"
     options={{
@@ -87,7 +88,7 @@ const TabsLayout = () => {
             />
         )
     }}
-    />
+    /> */}
 
 {/*  */}
 <Tabs.Screen 

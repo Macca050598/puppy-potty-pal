@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, handleSubmit, loading, error, analysis} from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getUserDogs, getDogToiletEvents, addToiletEvent } from '../../lib/appwrite'; // Adjust path as needed
+import { getUserDogs, getDogToiletEvents, addToiletEvent, analyzeToiletBreaks } from '../../lib/appwrite'; // Adjust path as needed
 import AddNewDog from '../../components/AddNewDog';
 import AddToiletTrip from '../../components/AddToiletTrip';
 import NextTripPrediction from '../../utils/NextTripPrediction';
 import EditDog from '../../components/EditDog';
 import { StatusBar } from 'expo-status-bar';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import { Button } from 'react-native';
 const Home = () => {
+  const {user} = useGlobalContext();
   const [dogs, setDogs] = useState([]);
   const [selectedDog, setSelectedDog] = useState(null);
   const [events, setEvents] = useState([]);
@@ -16,6 +19,30 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isEditDogModalVisible, setIsEditDogModalVisible] = useState(false);
   const [selectedDogForEdit, setSelectedDogForEdit] = useState();
+  const [analysis, setAnalysis] = useState(null);
+
+  const handleAnalyze = async () => {
+    if (!selectedDog) {
+      console.error('No dog selected for analysis');
+      return;
+    }
+  
+    try {
+      const result = await analyzeToiletBreaks(events, selectedDog.name);
+      console.log("Analysis result:", result);
+      setAnalysis(result);
+      // You can add logic here to show the result, maybe set a state to show a modal or navigate to a new screen
+    } catch (error) {
+      console.error('Failed to get AI analysis:', error);
+      // Handle the error, maybe show an alert to the user
+    }
+  };
+
+  useEffect(() => {
+    if (events.length > 0) {
+      handleAnalyze();
+    }
+  }, [events]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -86,8 +113,8 @@ const Home = () => {
     <>
       <View style={styles.header}>
         <View>
-          <Text style={styles.welcomeText}>Welcome Back</Text>
-          <Text style={styles.companyName}>MJWeb Ltd.</Text>
+          <Text style={styles.welcomeText}>Welcome Back,</Text>
+          <Text style={styles.companyName}>{user.username}</Text>
         </View>
         <TouchableOpacity onPress={() => setIsAddDogModalVisible(true)} style={styles.addDogButton}>
           <Text style={styles.addDogButtonText}>Add Dog</Text>
@@ -119,6 +146,7 @@ const Home = () => {
           )}
           style={styles.dogList}
         />
+
             </>
   );
 
@@ -171,10 +199,12 @@ const Home = () => {
         }}
         dogId={selectedDogForEdit ? selectedDogForEdit.$id : null}
       />
-      <StatusBar backgroundColor='#161622' style='light'/>
-          </SafeAreaView>
-        );
-      };
+
+ 
+              <StatusBar backgroundColor='#161622' style='light'/>
+                  </SafeAreaView>
+                );
+              };
 
 const styles = StyleSheet.create({
   scrollContent: {
@@ -263,6 +293,20 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: 'rgba(22, 22, 34, 0.9)', // Semi-transparent background
     padding: 10,
+  },
+  error: {
+    color: 'red',
+    marginTop: 10,
+  },
+  analysisContainer: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
+  analysisTitle: {
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
 

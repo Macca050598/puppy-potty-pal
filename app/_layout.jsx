@@ -29,6 +29,7 @@ const RootLayout = () => {
 
    return (
     <GlobalProvider>
+      
         <Stack>
             <Stack.Screen name = "index" options={{ headerShown: false}} />
 
