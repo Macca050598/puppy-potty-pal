@@ -28,7 +28,7 @@ const DogWithSpeechBubble = ({ isVisible, onClose, onAddTrip = [], message }) =>
 
   const translateY = animationValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [height, height - 200],
+    outputRange: [height, height - 270],
   });
 
   return (
@@ -37,7 +37,7 @@ const DogWithSpeechBubble = ({ isVisible, onClose, onAddTrip = [], message }) =>
         <Animated.View style={[styles.dogContainer, { transform: [{ translateY }] }]}>
          
           <View style={styles.speechBubble}>
-            
+            <Text>Ai Arlo</Text>
             <Text style={styles.speechText}>{message}</Text>
             
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -66,19 +66,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   dogImage: {
-    width: 200,
-    height: 200,
-    left: 155,
-    top: 7,
+    width: 250,
+    height: 450,
+    left: 180,
     resizeMode: 'contain',
   },
   speechBubble: {
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 60,
     maxWidth: 220,
-    right: 70,
+    right: 90,
+    top: -70,
   },
   speechText: {
     fontSize: 16,

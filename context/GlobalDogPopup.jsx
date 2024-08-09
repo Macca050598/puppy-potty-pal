@@ -1,75 +1,55 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DogWithSpeechBubble from '../components/DogWithSpeechBubble';
-import { analyzeToiletBreaks, getUserDogs, getDogToiletEvents } from '../lib/appwrite';
 import { useGlobalContext } from '../context/GlobalProvider';
 
-const LAST_UPDATE_KEY = 'LAST_AI_UPDATE';
-const UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
 const GlobalDogPopup = () => {
-  const { user } = useGlobalContext();
+  const { aiInsights } = useGlobalContext();
   const [isDogVisible, setIsDogVisible] = useState(false);
   const [currentMessage, setCurrentMessage] = useState('');
-  const [dogs, setDogs] = useState([]);
-  const [selectedDog, setSelectedDog] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [analysis, setAnalysis] = useState(null);
-  const lastUpdateRef = useRef(0);
+  const [localAiInsights, setLocalAiInsights] = useState(null);
+  const isFirstMessageRef = useRef(true);
 
-  const loadDogs = async () => {
+  const checkStoredInsights = async () => {
     try {
-      const userDogs = await getUserDogs();
-      setDogs(userDogs);
-      if (userDogs.length > 0) {
-        setSelectedDog(userDogs[0]);
-        await loadEvents(userDogs[0].$id);
+      const storedInsights = await AsyncStorage.getItem('AI_INSIGHTS');
+      if (storedInsights) {
+        return JSON.parse(storedInsights);
       }
     } catch (error) {
-      console.error('Failed to load dogs:', error);
+      console.error('Error checking stored insights:', error);
     }
+    return null;
   };
 
-  const loadEvents = async (dogId) => {
-    try {
-      const dogEvents = await getDogToiletEvents(dogId);
-      setEvents(dogEvents);
-    } catch (error) {
-      console.error('Failed to load events:', error);
-    }
-  };
+  useEffect(() => {
+    const loadStoredInsights = async () => {
+      const insights = await checkStoredInsights();
+      if (insights) {
+        setLocalAiInsights(insights);
+      }
+    };
 
-  const fetchAIInsights = async () => {
-    const now = Date.now();
-    if (now - lastUpdateRef.current < UPDATE_INTERVAL) {
-      console.log('Skipping AI update, too soon since last update');
-      return;
-    }
+    loadStoredInsights();
+  }, []);
 
-    if (!selectedDog || events.length === 0) return null;
-
-    try {
-      const insights = await analyzeToiletBreaks(events, selectedDog.name);
-      setAnalysis(insights);
-      lastUpdateRef.current = now;
-      await AsyncStorage.setItem(LAST_UPDATE_KEY, now.toString());
-      return insights;
-    } catch (error) {
-      console.error('Error fetching AI insights:', error);
-      return null;
+  useEffect(() => {
+    if (aiInsights) {
+      setLocalAiInsights(aiInsights);
+      AsyncStorage.setItem('AI_INSIGHTS', JSON.stringify(aiInsights));
     }
-  };
+  }, [aiInsights]);
 
   const getRandomAnalysisField = useCallback(() => {
-    if (!analysis) return null;
-    const fields = ['pattern', 'nextBreak', 'improvement', 'concerns', 'advice'];
+    const insights = localAiInsights || aiInsights;
+    if (!insights) return null;
+    const fields = ['Observed Patterns', 'Next Break', 'Recommended Improvements', 'My Concerns', 'My Advice'];
     const randomField = fields[Math.floor(Math.random() * fields.length)];
     return {
       field: randomField,
-      message: analysis[randomField]
+      message: insights[randomField]
     };
-  }, [analysis]);
+  }, [localAiInsights, aiInsights]);
 
   const showRandomMessage = useCallback(() => {
     const randomAnalysis = getRandomAnalysisField();
@@ -77,52 +57,45 @@ const GlobalDogPopup = () => {
       const { field, message } = randomAnalysis;
       setCurrentMessage(`${field.charAt(0).toUpperCase() + field.slice(1)}: ${message}`);
       setIsDogVisible(true);
-
-      setTimeout(() => {
-        setIsDogVisible(false);
-      }, 6000); // Show for 6 seconds
+      // Hide the dog after a random duration between 5 and 10 seconds
+      // const hideDuration = Math.random() * (10000 - 5000) + 5000;
+      // setTimeout(() => setIsDogVisible(false), hideDuration);
     }
   }, [getRandomAnalysisField]);
 
   useEffect(() => {
-    let intervalId;
+    const insights = localAiInsights || aiInsights;
+    if (insights) {
+      const scheduleNextAppearance = () => {
+        let delay;
+        if (isFirstMessageRef.current) {
+          // First message: 15-30 seconds
+          delay = Math.random() * (30000 - 15000) + 15000;
+          isFirstMessageRef.current = true;
+        } else {
+          // Subsequent messages: 2-5 minutes
+          delay = Math.random() * (300000 - 120000) + 120000;
+        }
 
-    const initializeAndSchedule = async () => {
-      const lastUpdate = await AsyncStorage.getItem(LAST_UPDATE_KEY);
-      lastUpdateRef.current = lastUpdate ? parseInt(lastUpdate) : 0;
+        setTimeout(() => {
+          showRandomMessage();
+          scheduleNextAppearance();
+        }, delay);
+      };
 
-      await loadDogs();
+      scheduleNextAppearance();
+    }
 
-      if (Date.now() - lastUpdateRef.current >= UPDATE_INTERVAL) {
-        await fetchAIInsights();
-      }
-
-      if (analysis) {
-        intervalId = setInterval(() => {
-          const delay = Math.random() * (60000 - 30000) + 30000; // Random delay between 30-60 seconds
-          setTimeout(showRandomMessage, delay);
-        }, 60000); // Check every minute
-      }
-    };
-
-    initializeAndSchedule();
-
+    // Cleanup function to reset isFirstMessageRef when component unmounts
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      isFirstMessageRef.current = true;
     };
-  }, []);
+  }, [localAiInsights, aiInsights, showRandomMessage]);
 
   return (
     <DogWithSpeechBubble
       isVisible={isDogVisible}
       onClose={() => setIsDogVisible(false)}
-      onAddTrip={async (tripData) => {
-        setIsDogVisible(false);
-        await loadDogs();
-        await fetchAIInsights();
-      }}
       message={currentMessage}
     />
   );
