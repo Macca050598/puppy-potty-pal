@@ -1,4 +1,4 @@
-import { router } from 'expo-router'
+import { router} from 'expo-router'
 import { useState } from 'react'
 import { View, FlatList } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -12,6 +12,7 @@ import { icons } from '../../constants'
 import { Image } from 'react-native'
 import InfoBox from '../../components/InfoBox'
 import { RefreshControl } from 'react-native'
+import AuthenticatedLayout from '../../components/AuthenticatedLayout'
 
 const Profile = () => {
   const { user, setUser, setIsLoggedIn} = useGlobalContext();
@@ -23,16 +24,23 @@ const Profile = () => {
     await refetch();
     setRefreshing(false);
   }
+  
   const logout = async () => {
-    await signOut();
-    setUser(null)
-    setIsLoggedIn(false)
+    try {
+      await signOut();
+      // Reload the app
+      await Updates.reloadAsync();
+    } catch (error) {
+      // If reload fails, fallback to navigation
+      router.replace("/sign-in");
+    }
+  };
 
-    router.replace("/sign-in");
-  }
 
   return (
+    <AuthenticatedLayout>
     <SafeAreaView className="bg-primary h-full">
+      
       <FlatList
         data={posts}
         keyExtractor={(item) => item.$id}
@@ -84,7 +92,9 @@ const Profile = () => {
         )}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       />
+      
     </SafeAreaView>
+    </AuthenticatedLayout>
   );
 };
 export default Profile;

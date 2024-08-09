@@ -9,6 +9,7 @@ import EditDog from '../../components/EditDog';
 import { StatusBar } from 'expo-status-bar';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { Button } from 'react-native';
+import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 const Home = () => {
   const {user} = useGlobalContext();
   const [dogs, setDogs] = useState([]);
@@ -21,28 +22,28 @@ const Home = () => {
   const [selectedDogForEdit, setSelectedDogForEdit] = useState();
   const [analysis, setAnalysis] = useState(null);
 
-  const handleAnalyze = async () => {
-    if (!selectedDog) {
-      console.error('No dog selected for analysis');
-      return;
-    }
+  // const handleAnalyze = async () => {
+  //   if (!selectedDog) {
+  //     console.error('No dog selected for analysis');
+  //     return;
+  //   }
   
-    try {
-      const result = await analyzeToiletBreaks(events, selectedDog.name);
-      console.log("Analysis result:", result);
-      setAnalysis(result);
-      // You can add logic here to show the result, maybe set a state to show a modal or navigate to a new screen
-    } catch (error) {
-      console.error('Failed to get AI analysis:', error);
-      // Handle the error, maybe show an alert to the user
-    }
-  };
+  //   try {
+  //     const result = await analyzeToiletBreaks(events, selectedDog.name);
+  //     console.log("Analysis result:", result);
+  //     setAnalysis(result);
+  //     // You can add logic here to show the result, maybe set a state to show a modal or navigate to a new screen
+  //   } catch (error) {
+  //     console.error('Failed to get AI analysis:', error);
+  //     // Handle the error, maybe show an alert to the user
+  //   }
+  // };
 
-  useEffect(() => {
-    if (events.length > 0) {
-      handleAnalyze();
-    }
-  }, [events]);
+  // useEffect(() => {
+  //   if (events.length > 5) {
+  //     handleAnalyze();
+  //   }
+  // }, [events]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -111,6 +112,7 @@ const Home = () => {
 
   const renderHeader = () => (
     <>
+    <AuthenticatedLayout>
       <View style={styles.header}>
         <View>
           <Text style={styles.welcomeText}>Welcome Back,</Text>
@@ -146,8 +148,9 @@ const Home = () => {
           )}
           style={styles.dogList}
         />
-
+</AuthenticatedLayout>
             </>
+            
   );
 
   return (

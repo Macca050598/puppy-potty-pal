@@ -11,7 +11,7 @@ import VideoCard from '../../components/VideoCard';
 import { StatusBar } from 'expo-status-bar';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import AddNewMedia from '../../components/AddNewMedia';
-
+import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 const Social = () => {
   const { user } = useGlobalContext();
   const { data: posts, refetch } = useAppwrite(getAllPosts);
@@ -27,6 +27,7 @@ const Social = () => {
   };
 
   return (
+    <AuthenticatedLayout>
     <SafeAreaView className="bg-primary h-full">
       <FlatList
         data={posts}
@@ -44,8 +45,8 @@ const Social = () => {
           <View className="my-6 px-4 space-y-6">
             <View className="justify-between items-start flex-row mb-6">
               <View>
-                <Text className="font-pmedium text-sm text-gray-100">Welcome Back</Text>
-                <Text className="text-2xl font-psemibold text-white">{user.username}</Text>
+                <Text className="font-pmedium text-sm text-gray-100">Welcome To Puppy Social</Text>
+                <Text className="text-2xl font-psemibold text-white">Upload Dog Pictures!</Text>
               </View>
               <View className="mt-1.5">
                 <TouchableOpacity onPress={() => setIsMediaVisible(true)}>
@@ -91,6 +92,7 @@ const Social = () => {
 
       <StatusBar backgroundColor="#161622" style="light" />
     </SafeAreaView>
+    </AuthenticatedLayout>
   );
 };
 

@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
-import DogWithSpeechBubble from '../components/DogWithSpeechBubble'; // Your Dog component
-import { analyzeToiletBreaks } from '../lib/appwrite'; // Your AI function
-import { getUserDogs, getDogToiletEvents } from '../lib/appwrite'; // Add this to load dogs and events
-import { useGlobalContext } from '../context/GlobalProvider'; // Assuming you have a global context for user data
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import DogWithSpeechBubble from '../components/DogWithSpeechBubble';
+import { analyzeToiletBreaks, getUserDogs, getDogToiletEvents } from '../lib/appwrite';
+import { useGlobalContext } from '../context/GlobalProvider';
+
+const LAST_UPDATE_KEY = 'LAST_AI_UPDATE';
+const UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 const GlobalDogPopup = () => {
   const { user } = useGlobalContext();
@@ -12,15 +15,16 @@ const GlobalDogPopup = () => {
   const [dogs, setDogs] = useState([]);
   const [selectedDog, setSelectedDog] = useState(null);
   const [events, setEvents] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const lastUpdateRef = useRef(0);
 
-  // Load dogs and events similar to the Home screen
   const loadDogs = async () => {
     try {
       const userDogs = await getUserDogs();
       setDogs(userDogs);
       if (userDogs.length > 0) {
         setSelectedDog(userDogs[0]);
-        loadEvents(userDogs[0].$id);
+        await loadEvents(userDogs[0].$id);
       }
     } catch (error) {
       console.error('Failed to load dogs:', error);
@@ -36,70 +40,92 @@ const GlobalDogPopup = () => {
     }
   };
 
-  useEffect(() => {
-    loadDogs();
-  }, []);
-
   const fetchAIInsights = async () => {
-    if (!selectedDog) {
-      console.error('No dog selected for analysis');
-      return ["I'm thinking..."];
+    const now = Date.now();
+    if (now - lastUpdateRef.current < UPDATE_INTERVAL) {
+      console.log('Skipping AI update, too soon since last update');
+      return;
     }
 
+    if (!selectedDog || events.length === 0) return null;
+
     try {
-      const analysis = await analyzeToiletBreaks(events, selectedDog.name);
-      return [
-        analysis.pattern,
-        analysis.nextBreak,
-        analysis.improvement,
-        analysis.concerns,
-        analysis.advice,
-      ];
+      const insights = await analyzeToiletBreaks(events, selectedDog.name);
+      setAnalysis(insights);
+      lastUpdateRef.current = now;
+      await AsyncStorage.setItem(LAST_UPDATE_KEY, now.toString());
+      return insights;
     } catch (error) {
       console.error('Error fetching AI insights:', error);
-      return ["I'm thinking..."];
+      return null;
     }
   };
 
-  useEffect(() => {
-    const showDog = async () => {
-      const messages = await fetchAIInsights();
-      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-      setCurrentMessage(randomMessage);
+  const getRandomAnalysisField = useCallback(() => {
+    if (!analysis) return null;
+    const fields = ['pattern', 'nextBreak', 'improvement', 'concerns', 'advice'];
+    const randomField = fields[Math.floor(Math.random() * fields.length)];
+    return {
+      field: randomField,
+      message: analysis[randomField]
+    };
+  }, [analysis]);
+
+  const showRandomMessage = useCallback(() => {
+    const randomAnalysis = getRandomAnalysisField();
+    if (randomAnalysis) {
+      const { field, message } = randomAnalysis;
+      setCurrentMessage(`${field.charAt(0).toUpperCase() + field.slice(1)}: ${message}`);
       setIsDogVisible(true);
 
       setTimeout(() => {
         setIsDogVisible(false);
-      }, 3000); // Show for 3 seconds
+      }, 6000); // Show for 6 seconds
+    }
+  }, [getRandomAnalysisField]);
+
+  useEffect(() => {
+    let intervalId;
+
+    const initializeAndSchedule = async () => {
+      const lastUpdate = await AsyncStorage.getItem(LAST_UPDATE_KEY);
+      lastUpdateRef.current = lastUpdate ? parseInt(lastUpdate) : 0;
+
+      await loadDogs();
+
+      if (Date.now() - lastUpdateRef.current >= UPDATE_INTERVAL) {
+        await fetchAIInsights();
+      }
+
+      if (analysis) {
+        intervalId = setInterval(() => {
+          const delay = Math.random() * (60000 - 30000) + 30000; // Random delay between 30-60 seconds
+          setTimeout(showRandomMessage, delay);
+        }, 60000); // Check every minute
+      }
     };
 
-    const intervalId = setInterval(() => {
-      if (events.length > 0) {  // Only show the popup if there are events to analyze
-        showDog();
-      }
-    }, Math.random() * (30000 - 15000) + 15000); // Every 15-30 seconds
+    initializeAndSchedule();
 
-    return () => clearInterval(intervalId);
-  }, [events]);
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, []);
 
   return (
-    <View style={styles.container}>
-      {isDogVisible && (
-        <DogWithSpeechBubble message={currentMessage} />
-      )}
-    </View>
+    <DogWithSpeechBubble
+      isVisible={isDogVisible}
+      onClose={() => setIsDogVisible(false)}
+      onAddTrip={async (tripData) => {
+        setIsDogVisible(false);
+        await loadDogs();
+        await fetchAIInsights();
+      }}
+      message={currentMessage}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1000, // Ensure it's on top of other elements
-  },
-});
 
 export default GlobalDogPopup;
