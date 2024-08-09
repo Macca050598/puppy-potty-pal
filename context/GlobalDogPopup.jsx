@@ -74,7 +74,6 @@ const GlobalDogPopup = () => {
           isFirstMessageRef.current = true;
         } else {
           // Subsequent messages: 2-5 minutes
-          delay = Math.random() * (300000 - 120000) + 120000;
         }
 
         setTimeout(() => {
