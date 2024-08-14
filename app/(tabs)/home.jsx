@@ -245,7 +245,7 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#161622',
   },
   scrollContent: {
     padding: 20,
@@ -256,6 +256,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    backgroundColor: '#161622',
   },
   welcomeText: {
     fontSize: 14,

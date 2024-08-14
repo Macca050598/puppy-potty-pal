@@ -1,100 +1,122 @@
-import { router} from 'expo-router'
-import { useState } from 'react'
-import { View, FlatList } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import EmptyState from '../../components/EmptyState'
-import { getUserPosts, signOut} from '../../lib/appwrite'
-import useAppwrite from '../../lib/useAppwrite'
-import VideoCard from '../../components/VideoCard'
-import {useGlobalContext} from '../../context/GlobalProvider'
-import { TouchableOpacity } from 'react-native'
-import { icons } from '../../constants'
-import { Image } from 'react-native'
-import InfoBox from '../../components/InfoBox'
-import { RefreshControl } from 'react-native'
-import AuthenticatedLayout from '../../components/AuthenticatedLayout'
+import React from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import { signOut } from '../../lib/appwrite';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import AuthenticatedLayout from '../../components/AuthenticatedLayout';
+
+const OptionItem = ({ icon, title, onPress, textColor = '#333' }) => (
+  <TouchableOpacity style={styles.optionItem} onPress={onPress}>
+    <Feather name={icon} size={24} color={textColor} />
+    <Text style={[styles.optionText, { color: textColor }]}>{title}</Text>
+    <Feather name="chevron-right" size={24} color="#ccc" />
+  </TouchableOpacity>
+);
 
 const Profile = () => {
-  const { user, setUser, setIsLoggedIn} = useGlobalContext();
-  const { data: posts, refetch } = useAppwrite(() => getUserPosts(user.$id));
-  const [refreshing, setRefreshing] = useState(false)
+  const { user } = useGlobalContext();
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }
-  
+  const handleOptionPress = (option) => {
+    console.log(`${option} pressed`);
+    // Add navigation or action logic here
+  };
+
   const logout = async () => {
     try {
       await signOut();
-      // Reload the app
-      await Updates.reloadAsync();
-    } catch (error) {
-      // If reload fails, fallback to navigation
       router.replace("/sign-in");
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   };
 
+  const options = [
+    { icon: "edit", title: "Edit User", onPress: () => handleOptionPress("Edit User"), textColor: '#FFF' },
+    { icon: "star", title: "Feature Request", onPress: () => handleOptionPress("Feature Request"), textColor: '#FFF' },
+    { icon: "alert-circle", title: "Report a Bug", onPress: () => handleOptionPress("Report a Bug"), textColor: '#FFF' },
+    { icon: "help-circle", title: "FAQ", onPress: () => handleOptionPress("FAQ"), textColor: '#FFF' },
+    { icon: "log-out", title: "Logout", onPress: logout, textColor: '#FF3B30' }
+  ];
 
   return (
     <AuthenticatedLayout>
-    <SafeAreaView className="bg-primary h-full">
-      
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => (
-          <VideoCard
-          title={item.title}
-          thumbnail={item.thumbnail}
-          video={item.video}
-          creator={item.creator.username}
-          avatar={item.creator.avatar}
+      <SafeAreaView style={styles.container}>
+        <View style={styles.profileSection}>
+          <Image
+            source={{ uri: user?.avatar || 'https://via.placeholder.com/100' }}
+            style={styles.profileImage}
           />
-        )}
-        ListHeaderComponent={() => (
-          <View className="w-full justify-center items-center mt-0 mb-12 px-4" >
-          <TouchableOpacity onPress={logout} className="flex w-full items-end mb-2" >
-            <Image source={icons.logout} resizeMode="contain" className="w-6 h-6" />
-          </TouchableOpacity>
-          <View className="w-16 h-16 border border-secondary-600 rounded-lg justify-center items-center">
-            <Image  source={{ uri: user?.avatar}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover'/>
+          <View style={styles.profileInfo}>
+            <Text style={styles.name}>{user?.username || 'User Name'}</Text>
+            <Text style={styles.email}>{user?.email || 'user@example.com'}</Text>
           </View>
+        </View>
 
-          <InfoBox 
-            title={user?.username}
-            containerStyles="mt-5 mb-0"
-            titleStyles="text-lg"
-          />
-          <View className="mt-0 flex-row">
-
-          <InfoBox 
-            title={posts.length || 0}
-            subtitle="Posts"
-            containerStyles="mr-10"
-            titleStyles="text-xl"
-          />
-          
-          <InfoBox 
-          title="1.2k"
-          subtitle="Likes"
-          titleStyles="text-xl"
+        <FlatList
+          data={options}
+          keyExtractor={(item) => item.title}
+          renderItem={({ item }) => (
+            <OptionItem
+              icon={item.icon}
+              title={item.title}
+              onPress={item.onPress}
+              textColor={item.textColor}
+            />
+          )}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
-          </View>
-          </View>
-        )}
-        ListEmptyComponent={() => (
-          <EmptyState
-            title="No Videos Found"
-            subtitle="No videos found for this search query"
-          />
-        )}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      />
-      
-    </SafeAreaView>
+      </SafeAreaView>
     </AuthenticatedLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#161622',
+  },
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#161622',
+    marginBottom: 20,
+    color: '#FFF'
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  profileInfo: {
+    marginLeft: 20,
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  email: {
+    fontSize: 16,
+    color: '#666',
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#161622',
+  },
+  optionText: {
+    flex: 1,
+    marginLeft: 15,
+    fontSize: 16,
+    color: '#666',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+  },
+});
+
 export default Profile;
