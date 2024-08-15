@@ -1,37 +1,105 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
-import { icons } from '../constants'
-import { useState } from 'react'
-import { Video, ResizeMode } from 'expo-av'
-const VideoCard = ({ title, creator, avatar, thumbnail, video }) => {
-  const [play, setPlay] = useState(false)
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { icons } from '../constants';
+import { Video, ResizeMode } from 'expo-av';
+
+const VideoCard = ({ title, creator, avatar, thumbnail, video, colors }) => {
+  const [play, setPlay] = useState(false);
+
+  const styles = StyleSheet.create({
+    container: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      marginBottom: 56,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: 12,
+      alignItems: 'flex-start',
+    },
+    avatarContainer: {
+      width: 46,
+      height: 46,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 2,
+    },
+    avatar: {
+      width: '100%',
+      height: '100%',
+      borderRadius: 8,
+    },
+    infoContainer: {
+      justifyContent: 'center',
+      flex: 1,
+      marginLeft: 12,
+      gap: 4,
+    },
+    title: {
+      color: colors.text,
+      fontWeight: '600',
+      fontSize: 14,
+    },
+    creator: {
+      color: colors.tint,
+      fontSize: 12,
+    },
+    menuIcon: {
+      width: 20,
+      height: 20,
+      tintColor: colors.tint,
+    },
+    videoContainer: {
+      width: '100%',
+      height: 240,
+      borderRadius: 12,
+      marginTop: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    video: {
+      width: '100%',
+      height: 240,
+      borderRadius: 12,
+    },
+    playIcon: {
+      width: 48,
+      height: 48,
+      position: 'absolute',
+      tintColor: colors.primary,
+    },
+  });
+
   return (
-    
-    <View className="flex-col items-center px-4 mb-14">
-        <View className="flex-row gap-3 items-start">
+    <View style={styles.container}>
+      <View style={styles.row}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', flex: 1 }}>
+          <View style={styles.avatarContainer}>
+            <Image source={{uri: avatar}} style={styles.avatar} resizeMode='cover'/>
+          </View>
 
-        <View className="justify-center items-center flex-row flex-1">
-            <View className="w-[46px] h-[46px] rounded-lg border border-secondary justify-center items-center p-0.5">
-            <Image source={{uri: avatar}} className="w-full h-full rounded-lg" resizeMode='cover'/>
-            </View>
-
-            <View className="justify-center flex-1 ml-3 gap-y-1">
-              <Text className="text-white font-psemibold text-sm" numberOfLines={1}>
-                {title}
-              </Text> 
-              <Text className="text-xs text-gray-100 font-pregular" numberOfLines={1}>
-                {creator}
-              </Text>
-            </View>
-        </View>
-          <View className="pt-2">
-            <Image  source={icons.menu} className="w-5 h-5" resizeMode='contain'/>
+          <View style={styles.infoContainer}>
+            <Text style={styles.title} numberOfLines={1}>
+              {title}
+            </Text> 
+            <Text style={styles.creator} numberOfLines={1}>
+              {creator}
+            </Text>
           </View>
         </View>
+        <View style={{ paddingTop: 8 }}>
+          <Image source={icons.menu} style={styles.menuIcon} resizeMode='contain'/>
+        </View>
+      </View>
 
       {play ? (
-          <Video
+        <Video
           source={{ uri: video }}
-          className="w-full h-60 rounded-xl mt-3"
+          style={styles.video}
           resizeMode={ResizeMode.CONTAIN}
           useNativeControls
           shouldPlay
@@ -43,24 +111,23 @@ const VideoCard = ({ title, creator, avatar, thumbnail, video }) => {
         />
       ) : (
         <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={()=> setPlay(true)}
-        className="w-full h-60 rounded-xl mt-3 relative justify-center items-center">
-          <Image source={{ uri: thumbnail}}
-          className="w-full h-full rounded-xl mt-3"
-          resizeMode='cover'
+          activeOpacity={0.7}
+          onPress={() => setPlay(true)}
+          style={styles.videoContainer}
+        >
+          <Image 
+            source={{ uri: thumbnail}}
+            style={styles.video}
+            resizeMode='cover'
           />
           <Image 
-          source={icons.play}
-          className="w-12 h-12 absolute"
+            source={icons.play}
+            style={styles.playIcon}
           />
         </TouchableOpacity>
       )}
-
-
-     
     </View>
-  )
-}
+  );
+};
 
-export default VideoCard
+export default VideoCard;

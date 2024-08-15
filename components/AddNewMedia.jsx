@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, FlatList, Image } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import CustomButton from './CustomButton.jsx';
 import FormField from '../components/FormField.jsx';
 import icons from '../constants/icons.js';
 
-const AddToiletTrip = ({ isVisible, onClose }) => {
+const AddNewMedia = ({ isVisible, onClose, colors }) => {
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: '',
@@ -15,73 +15,143 @@ const AddToiletTrip = ({ isVisible, onClose }) => {
   });
 
   const openPicker = async (selectType) => {
-      
+    // Implement picker logic  
   }
 
   const submit = () => {
     // Implement submission logic
   };
 
+  const styles = StyleSheet.create({
+    modalOverlay: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: colors.accent,
+      borderRadius: 20,
+      padding: 20,
+      width: '90%',
+      height: '90%',
+      position: 'relative',
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 10,
+      right: 15,
+      padding: 5,
+      zIndex: 10,
+    },
+    closeButtonText: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 15,
+      textAlign: 'center',
+      color: colors.text,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      color: colors.text,
+      fontWeight: '500',
+      marginBottom: 8,
+    },
+    uploadContainer: {
+      width: '100%',
+      height: 160,
+      padding: 16,
+      backgroundColor: colors.secondary,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    uploadIconContainer: {
+      width: 56,
+      height: 56,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderColor: colors.tint,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    uploadIcon: {
+      width: '50%',
+      height: '50%',
+      tintColor: colors.tint,
+    },
+    thumbnailContainer: {
+      width: '100%',
+      height: 64,
+      padding: 16,
+      backgroundColor: colors.secondary,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: colors.tint,
+      flexDirection: 'row',
+    },
+    thumbnailText: {
+      fontSize: 14,
+      color: colors.text,
+      fontWeight: '500',
+      marginLeft: 8,
+    },
+    video: {
+      width: '100%',
+      height: 256,
+      borderRadius: 16,
+    },
+    thumbnail: {
+      width: '100%',
+      height: 256,
+      borderRadius: 16,
+    },
+  });
+
   return (
     <Modal visible={isVisible} animationType="slide" transparent={true}>
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      }}>
-        <View style={{
-          backgroundColor: 'white',
-          borderRadius: 20,
-          padding: 20,
-          width: '90%',
-          height: '90%',
-          position: 'relative', // Required to position the close button
-          marginBottom: 0,
-        }}>
-          
-          {/* X button to close the modal */}
-          <TouchableOpacity
-            onPress={onClose}
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: 15,
-              padding: 5,
-              zIndex: 10,
-            }}
-          >
-            <Text style={{ fontSize: 32, fontWeight: 'bold' }}>x</Text>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>x</Text>
           </TouchableOpacity>
           
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>Upload a Video</Text>
+          <Text style={styles.title}>Upload a Video</Text>
           
           <FormField 
             title="Image Title"
             value={form.title}
             placeholder="Give your image a catchy title..."
             handleChangeText={(e) => setForm({ ...form, title: e })}
-            otherStyles="mt-10"
+            otherStyles={{ marginTop: 40 }}
+            colors={colors}
           />
 
-          <View className="mt-7 space-y-2">
-            <Text className="text-base text-gray-100 font-pmedium">Upload Video</Text>
+          <View style={{ marginTop: 28 }}>
+            <Text style={styles.sectionTitle}>Upload Video</Text>
             <TouchableOpacity onPress={() => openPicker('video')}>
               {form.video ? (
                 <Video
                   source={{ uri: form.video.uri }}
-                  className="w-full h-64 rounded-2xl"
+                  style={styles.video}
                   useNativeControls
                   resizeMode={ResizeMode.COVER}
                   isLooping
                 />
               ) : (
-                <View className="w-full h-40 px-4 bg-black-100 rounded-2xl justify-center items-center">
-                  <View className="w-14 h-14 border border-dashed border-secondary-100 justify-center items-center">
+                <View style={styles.uploadContainer}>
+                  <View style={styles.uploadIconContainer}>
                     <Image 
                       source={icons.upload}
                       resizeMode='contain'
-                      className="w-1/2 h-1/2"
+                      style={styles.uploadIcon}
                     />
                   </View>
                 </View>
@@ -89,23 +159,23 @@ const AddToiletTrip = ({ isVisible, onClose }) => {
             </TouchableOpacity>
           </View>
 
-          <View className="mt-7 space-y-2">
-            <Text className="text-base text-gray-100 font-pmedium">Thumbnail Image</Text>
+          <View style={{ marginTop: 28 }}>
+            <Text style={styles.sectionTitle}>Thumbnail Image</Text>
             <TouchableOpacity onPress={() => openPicker('image')}>
               {form.thumbnail ? (
                 <Image 
                   source={{ uri: form.thumbnail.uri }}
                   resizeMode='cover'
-                  className="w-full h-64 rounded-2xl"
+                  style={styles.thumbnail}
                 />
               ) : (
-                <View className="w-full h-16 px-4 bg-black-100 rounded-2xl justify-center items-center border-2 border-back-200 flex-row space-x-2">
+                <View style={styles.thumbnailContainer}>
                   <Image 
                     source={icons.upload}
                     resizeMode='contain'
-                    className="w-5 h-5"
+                    style={styles.uploadIcon}
                   />
-                  <Text className="text-sm text-gray-100 font-pmedium">Choose a file</Text>
+                  <Text style={styles.thumbnailText}>Choose a file</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -116,14 +186,16 @@ const AddToiletTrip = ({ isVisible, onClose }) => {
             value={form.prompt}
             placeholder="The Prompt you used to create this video"
             handleChangeText={(e) => setForm({ ...form, prompt: e })}
-            otherStyles="mt-7"
+            otherStyles={{ marginTop: 28 }}
+            colors={colors}
           />
           
           <CustomButton 
             title="Submit & Publish"
             handlePress={submit}
-            containerStyles="mt-7"
+            containerStyles={{ marginTop: 28 }}
             isLoading={uploading}
+            colors={colors}
           />
         </View>
       </View>
@@ -131,4 +203,4 @@ const AddToiletTrip = ({ isVisible, onClose }) => {
   );
 };
 
-export default AddToiletTrip;
+export default AddNewMedia;

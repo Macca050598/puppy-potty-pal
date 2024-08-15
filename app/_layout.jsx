@@ -4,7 +4,7 @@ import { SplashScreen, Stack} from 'expo-router';
 import { useFonts} from 'expo-font';
 import { useEffect } from 'react';
 import GlobalProvider from '../context/GlobalProvider'
-
+import { ThemeProvider } from '../config/theme';
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
@@ -28,14 +28,17 @@ const RootLayout = () => {
     if(!fontsLoaded && !error) return null;
 
     return (
+        <ThemeProvider>
         <GlobalProvider>
             <Stack>
                 <Stack.Screen name = "index" options={{ headerShown: false}} />
                 <Stack.Screen name = "(auth)" options={{ headerShown: false}} />
                 <Stack.Screen name = "(tabs)" options={{ headerShown: false}} />
+                <Stack.Screen name = "userOptions/[family]" options={{ headerShown: false}} />
                 <Stack.Screen name = "search/[query]" options={{ headerShown: false}} />
             </Stack>
         </GlobalProvider>
+        </ThemeProvider>
     )
 }
 

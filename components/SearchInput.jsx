@@ -1,38 +1,64 @@
-import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native'
-import { useState } from 'react'
-import { router } from 'expo-router'
-import { icons } from '../constants'
-import { usePathname } from 'expo-router'
+import React, { useState } from 'react';
+import { View, TextInput, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import { router, usePathname } from 'expo-router';
+import { icons } from '../constants';
 
-const SearchInput = ({ initialQuery }) => {
+const SearchInput = ({ initialQuery, colors }) => {
   const pathname = usePathname();
-  const [query, setQuery] = useState(initialQuery || "")
+  const [query, setQuery] = useState(initialQuery || "");
+
+  const styles = StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '100%',
+      height: 64,
+      paddingHorizontal: 16,
+      backgroundColor: colors.accent,
+      borderRadius: 16,
+      borderWidth: 2,
+      borderColor: colors.tint,
+    },
+    input: {
+      flex: 1,
+      fontSize: 16,
+      marginTop: 2,
+      color: colors.text,
+      fontWeight: '400',
+    },
+    searchIcon: {
+      width: 20,
+      height: 20,
+      tintColor: colors.tint,
+    },
+  });
+
   return (
-    <View className="flex flex-row items-center space-x-4 w-full h-16 px-4 bg-black-100 rounded-2xl border-2 border-black-200 focus:border-secondary">
-    <TextInput
-      className="text-base mt-0.5 text-white flex-1 font-pregular"
-      value={query}
-      placeholder="Search for a breed of dog"
-      placeholderTextColor="#CDCDE0"
-      onChangeText={(e) => setQuery(e)}
-    />
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        value={query}
+        placeholder="Search for a breed of dog"
+        placeholderTextColor={colors.tint}
+        onChangeText={(e) => setQuery(e)}
+      />
 
-    <TouchableOpacity
-      onPress={() => {
-        if (query === "")
-          return Alert.alert(
-            "Missing Query",
-            "Please input something to search results across database"
-          );
+      <TouchableOpacity
+        onPress={() => {
+          if (query === "")
+            return Alert.alert(
+              "Missing Query",
+              "Please input something to search results across database"
+            );
 
-        if (pathname.startsWith("/search")) router.setParams({ query });
-        else router.push(`/search/${query}`);
-      }}
-    >
-      <Image source={icons.search} className="w-5 h-5" resizeMode="contain" />
-    </TouchableOpacity>
-  </View>
-);
+          if (pathname.startsWith("/search")) router.setParams({ query });
+          else router.push(`/search/${query}`);
+        }}
+      >
+        <Image source={icons.search} style={styles.searchIcon} resizeMode="contain" />
+      </TouchableOpacity>
+    </View>
+  );
 };
 
 export default SearchInput;

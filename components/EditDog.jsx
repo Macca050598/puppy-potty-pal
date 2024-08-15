@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { updateDog, deleteDog, getDog } from '../lib/appwrite'; // You'll need to implement getDog
+import { updateDog, deleteDog, getDog } from '../lib/appwrite';
 
-const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId }) => {
+const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors }) => {
   const [dogName, setDogName] = useState('');
   const [dogBreed, setDogBreed] = useState('');
   const [dogDOB, setDogDOB] = useState(new Date());
@@ -73,16 +73,81 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId }) => {
     }
   };
 
+  const styles = StyleSheet.create({
+    modalOverlay: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: colors.accent,
+      borderRadius: 20,
+      padding: 20,
+      width: '80%',
+      maxWidth: 300,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 15,
+      textAlign: 'center',
+      color: colors.text,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 15,
+      color: colors.text,
+    },
+    datePickerButton: {
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 15,
+    },
+    datePickerText: {
+      color: colors.text,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 20,
+    },
+    button: {
+      borderRadius: 5,
+      padding: 10,
+      width: '30%',
+    },
+    cancelButton: {
+      backgroundColor: colors.secondary,
+    },
+    updateButton: {
+      backgroundColor: colors.primary,
+    },
+    deleteButton: {
+      backgroundColor: 'red',
+    },
+    buttonText: {
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    cancelButtonText: {
+      color: colors.text,
+    },
+    actionButtonText: {
+      color: colors.accent,
+    },
+  });
+
   if (isLoading) {
     return (
       <Modal visible={isVisible} animationType="fade" transparent={true}>
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        }}>
-          <Text style={{ color: 'white' }}>Loading...</Text>
+        <View style={styles.modalOverlay}>
+          <Text style={{ color: colors.text }}>Loading...</Text>
         </View>
       </Modal>
     );
@@ -90,59 +155,32 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId }) => {
 
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true}>
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      }}>
-        <View style={{
-          backgroundColor: 'white',
-          borderRadius: 20,
-          padding: 20,
-          width: '80%',
-          maxWidth: 300,
-        }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>Edit Dog</Text>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.title}>Edit Dog</Text>
           
           <TextInput
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 5,
-              padding: 10,
-              marginBottom: 15,
-            }}
+            style={styles.input}
             placeholder="Dog Name"
+            placeholderTextColor={colors.tint}
             value={dogName}
             onChangeText={setDogName}
           />
 
           <TextInput
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 5,
-              padding: 10,
-              marginBottom: 15,
-            }}
+            style={styles.input}
             placeholder="Dog Breed"
+            placeholderTextColor={colors.tint}
             value={dogBreed}
             onChangeText={setDogBreed}
           />
 
-          <Text style={{ marginBottom: 5 }}>Date of Birth:</Text>
+          <Text style={[styles.datePickerText, { marginBottom: 5 }]}>Date of Birth:</Text>
           <TouchableOpacity 
-            style={{ 
-              borderWidth: 1, 
-              borderColor: '#ccc', 
-              borderRadius: 5, 
-              padding: 10, 
-              marginBottom: 15 
-            }}
+            style={styles.datePickerButton}
             onPress={() => setShowDatePicker(true)}
           >
-            <Text>{dogDOB.toLocaleDateString()}</Text>
+            <Text style={styles.datePickerText}>{dogDOB.toLocaleDateString()}</Text>
           </TouchableOpacity>
 
           {showDatePicker && (
@@ -151,46 +189,28 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId }) => {
               mode="date"
               display="default"
               onChange={onChangeDOB}
+              textColor={colors.text}
             />
           )}
 
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 20,
-          }}>
+          <View style={styles.buttonContainer}>
             <TouchableOpacity 
-              style={{
-                borderRadius: 5,
-                padding: 10,
-                backgroundColor: '#ccc',
-                width: '30%',
-              }} 
+              style={[styles.button, styles.cancelButton]}
               onPress={onClose}
             >
-              <Text style={{ color: 'black', fontWeight: 'bold', textAlign: 'center' }}>Cancel</Text>
+              <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={{
-                borderRadius: 5,
-                padding: 10,
-                backgroundColor: '#FF9C01',
-                width: '30%',
-              }} 
+              style={[styles.button, styles.updateButton]}
               onPress={handleUpdateDog}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Update</Text>
+              <Text style={[styles.buttonText, styles.actionButtonText]}>Update</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={{
-                borderRadius: 5,
-                padding: 10,
-                backgroundColor: 'red',
-                width: '30%',
-              }} 
+              style={[styles.button, styles.deleteButton]}
               onPress={handleDeleteDog}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Delete</Text>
+              <Text style={[styles.buttonText, styles.actionButtonText]}>Delete</Text>
             </TouchableOpacity>
           </View>
         </View>

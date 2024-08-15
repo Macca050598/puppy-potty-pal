@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { predictNextTrip } from '../utils/tripPrediction';
 
-const NextTripPrediction = ({ selectedDog }) => {
+const NextTripPrediction = ({ selectedDog, colors }) => {
   const [predictedInterval, setPredictedInterval] = useState(null);
   const [predictionError, setPredictionError] = useState(null);
   const [lastTripTime, setLastTripTime] = useState(null);
@@ -61,6 +61,29 @@ const NextTripPrediction = ({ selectedDog }) => {
 
   const nextTripTime = getNextTripTime();
 
+  const styles = StyleSheet.create({
+    predictionContainer: {
+      backgroundColor: `${colors.secondary}40`,
+      padding: 10,
+      borderRadius: 5,
+      marginTop: 10,
+    },
+    predictionTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 5,
+    },
+    predictionText: {
+      fontSize: 14,
+      color: colors.primary,
+    },
+    predictionError: {
+      fontSize: 14,
+      color: colors.tint,
+    },
+  });
+
   return (
     <View style={styles.predictionContainer}>
       <Text style={styles.predictionTitle}>Next Predicted Toilet Trip:</Text>
@@ -76,28 +99,5 @@ const NextTripPrediction = ({ selectedDog }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  predictionContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  predictionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 5,
-  },
-  predictionText: {
-    fontSize: 14,
-    color: '#4CAF50',
-  },
-  predictionError: {
-    fontSize: 14,
-    color: '#FFA500',
-  },
-});
 
 export default NextTripPrediction;

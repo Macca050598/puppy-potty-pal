@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import EditToiletTrip from '../../components/EditToiletTrip';
+import { useTheme } from '../../config/theme';
 
 const groupEventsByDay = (events) => {
   const grouped = events.reduce((acc, event) => {
@@ -26,6 +27,7 @@ const groupEventsByDay = (events) => {
 };
 
 const Home = () => {
+  const { colors } = useTheme();
   const { user } = useGlobalContext();
   const [dogs, setDogs] = useState([]);
   const [selectedDog, setSelectedDog] = useState(null);
@@ -38,6 +40,104 @@ const Home = () => {
   const [isEditTripModalVisible, setIsEditTripModalVisible] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState(null);
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.accent,
+    },
+    scrollContent: {
+      padding: 20,
+      paddingBottom: 100,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20,
+      backgroundColor: colors.accent,
+    },
+    welcomeText: {
+      fontSize: 14,
+      color: colors.tint,
+    },
+    companyName: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    addDogButton: {
+      padding: 10,
+      backgroundColor: colors.primary,
+      borderRadius: 5,
+    },
+    addDogButtonText: {
+      color: colors.text,
+      fontWeight: 'bold',
+    },
+    addTripButton: {
+      backgroundColor: colors.primary,
+      padding: 15,
+      borderRadius: 5,
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    addTripButtonText: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: 'bold',
+    },
+    dogList: {
+      marginBottom: 20,
+    },
+    dogItem: {
+      backgroundColor: colors.secondary,
+      padding: 10,
+      borderRadius: 5,
+      marginRight: 10,
+    },
+    selectedDogItem: {
+      backgroundColor: colors.primary,
+    },
+    dogName: {
+      color: colors.text,
+    },
+    dayGroup: {
+      marginBottom: 20,
+    },
+    dayLabel: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.primary,
+      marginBottom: 10,
+    },
+    eventItem: {
+      backgroundColor: `${colors.secondary}40`,
+      padding: 10,
+      borderRadius: 5,
+      marginBottom: 10,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    eventText: {
+      color: colors.text,
+    },
+    eventTime: {
+      color: colors.tint,
+    },
+    emptyText: {
+      color: colors.tint,
+      textAlign: 'center',
+    },
+    predictionContainer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: `${colors.accent}E6`,
+      padding: 10,
+    },
+  });
+  
   const handleEditTrip = async (updatedTrip) => {
     try {
       await updateToiletEvent(updatedTrip.$id, updatedTrip);
@@ -179,7 +279,7 @@ const Home = () => {
             <Text style={styles.eventTime}>
               {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Text>
-            <Text stlye={styles.eventTime}>{user.username}</Text>
+            <Text style={styles.eventTime}>{user.username}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -198,19 +298,21 @@ const Home = () => {
       />
 
       <View style={styles.predictionContainer}>
-        <NextTripPrediction selectedDog={selectedDog} />
+        <NextTripPrediction selectedDog={selectedDog} colors={colors}/>
       </View>
 
       <AddNewDog
         isVisible={isAddDogModalVisible}
         onClose={() => setIsAddDogModalVisible(false)}
         onDogAdded={handleDogAdded}
+        colors={colors}
       />
       <AddToiletTrip
         isVisible={isAddTripModalVisible}
         onClose={() => setIsAddTripModalVisible(false)}
         onAddTrip={handleAddTrip}
         dogs={dogs}
+        colors={colors}
       />
 
       <EditDog
@@ -229,118 +331,21 @@ const Home = () => {
           }
         }}
         dogId={selectedDogForEdit ? selectedDogForEdit.$id : null}
+        colors={colors}
       />
 
-        <EditToiletTrip
-                isVisible={isEditTripModalVisible}
-                onClose={() => setIsEditTripModalVisible(false)}
-                onSave={handleEditTrip}
-                trip={selectedTrip}
-              />
-      <StatusBar backgroundColor='#161622' style='light'/>
+      <EditToiletTrip
+        isVisible={isEditTripModalVisible}
+        onClose={() => setIsEditTripModalVisible(false)}
+        onSave={handleEditTrip}
+        trip={selectedTrip}
+        colors={colors}
+      />
+      <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#161622',
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 100,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    backgroundColor: '#161622',
-  },
-  welcomeText: {
-    fontSize: 14,
-    color: '#CCCCCC',
-  },
-  companyName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  addDogButton: {
-    padding: 10,
-    backgroundColor: '#FF9C01',
-    borderRadius: 5,
-  },
-  addDogButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  addTripButton: {
-    backgroundColor: '#FF9C01',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  username: {
-    
-  },
-  addTripButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  dogList: {
-    marginBottom: 20,
-  },
-  dogItem: {
-    backgroundColor: '#333333',
-    padding: 10,
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  selectedDogItem: {
-    backgroundColor: '#FF9C01',
-  },
-  dogName: {
-    color: 'white',
-  },
-  dayGroup: {
-    marginBottom: 20,
-  },
-  dayLabel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF9C01',
-    marginBottom: 10,
-  },
-  eventItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  eventText: {
-    color: 'white',
-  },
-  eventTime: {
-    color: '#CCCCCC',
-  },
-  emptyText: {
-    color: '#CCCCCC',
-    textAlign: 'center',
-  },
-  predictionContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(22, 22, 34, 0.9)',
-    padding: 10,
-  },
-});
+
 
 export default Home;

@@ -3,7 +3,7 @@ import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CustomDropdown from './CustomDropdown.jsx';
 
-const EditToiletTrip = ({ isVisible, onClose, onSave, trip }) => {
+const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors }) => {
   const [type, setType] = useState('');
   const [location, setLocation] = useState('');
   const [timestamp, setTimestamp] = useState(new Date());
@@ -43,6 +43,69 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip }) => {
 
   if (!trip) return null;
 
+  const styles = StyleSheet.create({
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: colors.accent,
+      borderRadius: 20,
+      padding: 20,
+      width: '80%',
+      maxWidth: 300,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 15,
+      textAlign: 'center',
+      color: colors.text,
+    },
+    label: {
+      marginBottom: 5,
+      color: colors.text,
+    },
+    timeButton: {
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 15,
+    },
+    timeButtonText: {
+      color: colors.text,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 20,
+    },
+    button: {
+      borderRadius: 5,
+      padding: 10,
+      width: '45%',
+    },
+    cancelButton: {
+      backgroundColor: colors.secondary,
+    },
+    saveButton: {
+      backgroundColor: colors.primary,
+    },
+    cancelButtonText: {
+      color: colors.text,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    saveButtonText: {
+      color: colors.accent,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+  });
+
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true}>
       <View style={styles.modalContainer}>
@@ -54,6 +117,7 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip }) => {
             selectedValue={type}
             onSelect={setType}
             label="Type of toilet"
+            colors={colors}
           />
 
           <CustomDropdown
@@ -61,6 +125,7 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip }) => {
             selectedValue={location}
             onSelect={setLocation}
             label="Location"
+            colors={colors}
           />
 
           <Text style={styles.label}>Time:</Text>
@@ -68,7 +133,7 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip }) => {
             style={styles.timeButton}
             onPress={() => setShowTimePicker(true)}
           >
-            <Text>{timestamp.toLocaleTimeString()}</Text>
+            <Text style={styles.timeButtonText}>{timestamp.toLocaleTimeString()}</Text>
           </TouchableOpacity>
 
           {showTimePicker && (
@@ -78,6 +143,7 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip }) => {
               is24Hour={true}
               display="default"
               onChange={onChangeTime}
+              textColor={colors.text}
             />
           )}
 
@@ -100,63 +166,5 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip }) => {
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
-    width: '80%',
-    maxWidth: 300,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  label: {
-    marginBottom: 5,
-  },
-  timeButton: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 15,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  button: {
-    borderRadius: 5,
-    padding: 10,
-    width: '45%',
-  },
-  cancelButton: {
-    backgroundColor: '#ccc',
-  },
-  saveButton: {
-    backgroundColor: '#FF9C01',
-  },
-  cancelButtonText: {
-    color: 'black',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  saveButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-});
 
 export default EditToiletTrip;

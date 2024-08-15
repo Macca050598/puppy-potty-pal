@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { addDog, getCurrentUser } from '../lib/appwrite'; // Adjust the import path as needed
 
-const AddNewDog = ({ isVisible, onClose, onDogAdded }) => {
+const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
   const [newDogName, setNewDogName] = useState('');
   const [newDogBreed, setNewDogBreed] = useState('');
   const [newDogDOB, setNewDogDOB] = useState(new Date());
@@ -39,61 +39,105 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded }) => {
     }
   };
 
+  const styles = StyleSheet.create({
+    modalOverlay: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: colors.accent,
+      borderRadius: 20,
+      padding: 20,
+      width: '80%',
+      maxWidth: 300,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 15,
+      textAlign: 'center',
+      color: colors.text,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 15,
+      color: colors.text,
+    },
+    datePickerButton: {
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 15,
+    },
+    datePickerText: {
+      color: colors.text,
+    },
+    errorText: {
+      color: 'red',
+      marginBottom: 15,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 20,
+    },
+    button: {
+      borderRadius: 5,
+      padding: 10,
+      width: '45%',
+    },
+    cancelButton: {
+      backgroundColor: colors.secondary,
+    },
+    addButton: {
+      backgroundColor: colors.primary,
+    },
+    buttonText: {
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    cancelButtonText: {
+      color: colors.text,
+    },
+    addButtonText: {
+      color: colors.accent,
+    },
+  });
+
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true}>
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      }}>
-        <View style={{
-          backgroundColor: 'white',
-          borderRadius: 20,
-          padding: 20,
-          width: '80%',
-          maxWidth: 300,
-        }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>Add New Dog</Text>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.title}>Add New Dog</Text>
           
           <TextInput
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 5,
-              padding: 10,
-              marginBottom: 15,
-            }}
+            style={styles.input}
             placeholder="Dog Name"
+            placeholderTextColor={colors.tint}
             value={newDogName}
             onChangeText={setNewDogName}
           />
 
           <TextInput
-            style={{
-              borderWidth: 1,
-              borderColor: '#ccc',
-              borderRadius: 5,
-              padding: 10,
-              marginBottom: 15,
-            }}
+            style={styles.input}
             placeholder="Dog Breed"
+            placeholderTextColor={colors.tint}
             value={newDogBreed}
             onChangeText={setNewDogBreed}
           />
 
-          <Text style={{ marginBottom: 5 }}>Date of Birth:</Text>
+          <Text style={[styles.datePickerText, { marginBottom: 5 }]}>Date of Birth:</Text>
           <TouchableOpacity 
-            style={{ 
-              borderWidth: 1, 
-              borderColor: '#ccc', 
-              borderRadius: 5, 
-              padding: 10, 
-              marginBottom: 15 
-            }}
+            style={styles.datePickerButton}
             onPress={() => setShowDatePicker(true)}
           >
-            <Text>{newDogDOB.toLocaleDateString()}</Text>
+            <Text style={styles.datePickerText}>{newDogDOB.toLocaleDateString()}</Text>
           </TouchableOpacity>
 
           {showDatePicker && (
@@ -102,39 +146,26 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded }) => {
               mode="date"
               display="default"
               onChange={onChangeDOB}
+              textColor={colors.text}
             />
           )}
 
           {dobError ? (
-            <Text style={{ color: 'red', marginBottom: 15 }}>{dobError}</Text>
+            <Text style={styles.errorText}>{dobError}</Text>
           ) : null}
 
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 20,
-          }}>
+          <View style={styles.buttonContainer}>
             <TouchableOpacity 
-              style={{
-                borderRadius: 5,
-                padding: 10,
-                backgroundColor: '#ccc',
-                width: '45%',
-              }} 
+              style={[styles.button, styles.cancelButton]}
               onPress={onClose}
             >
-              <Text style={{ color: 'black', fontWeight: 'bold', textAlign: 'center' }}>Cancel</Text>
+              <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={{
-                borderRadius: 5,
-                padding: 10,
-                backgroundColor: '#FF9C01',
-                width: '45%',
-              }} 
+              style={[styles.button, styles.addButton]}
               onPress={handleAddDog}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Add Dog</Text>
+              <Text style={[styles.buttonText, styles.addButtonText]}>Add Dog</Text>
             </TouchableOpacity>
           </View>
         </View>
