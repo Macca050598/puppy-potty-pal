@@ -8,8 +8,10 @@ import { searchPosts } from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
 import VideoCard from '../../components/VideoCard';
 import { useTheme } from '../../config/theme'; // Import useTheme hook
+import { useRouter } from 'expo-router';
 
 const Search = () => {
+  const router = useRouter();
   const { colors } = useTheme(); // Use the useTheme hook to get colors
   const { query } = useLocalSearchParams();
   const { data: posts, refetch } = useAppwrite(() => searchPosts(query));

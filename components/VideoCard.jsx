@@ -45,7 +45,7 @@ const VideoCard = ({ title, creator, avatar, thumbnail, video, colors }) => {
       fontSize: 14,
     },
     creator: {
-      color: colors.tint,
+      color: colors.primary,
       fontSize: 12,
     },
     menuIcon: {

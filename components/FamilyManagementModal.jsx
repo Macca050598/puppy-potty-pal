@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList, M
 import { useTheme } from '../config/theme';
 import { updateFamily, removeUserFromFamily, deleteFamily, leaveFamily, getUserDogs, getFamilyDogs, updateFamilyDogs, getAllUsers, updateFamilyMembers } from '../lib/appwrite';
 import AuthenticatedLayout from './AuthenticatedLayout';
-
+import { StatusBar } from 'expo-status-bar';
 const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUserId }) => {
   const { colors } = useTheme();
   const [editedFamilyName, setEditedFamilyName] = useState(family?.name || '');
@@ -305,6 +305,7 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
             </TouchableOpacity>
           </View>
         </View>
+        <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
       </AuthenticatedLayout>
     </Modal>
   );

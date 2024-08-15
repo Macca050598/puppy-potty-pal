@@ -91,7 +91,7 @@ const TabsLayout = () => {
         />
 
         <Tabs.Screen 
-          name="burger"
+          name="options"
           options={{
             title: 'Options',
             headerShown: false,

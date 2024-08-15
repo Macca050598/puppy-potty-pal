@@ -102,11 +102,12 @@ const Profile = () => {
 
   const options1 = [
     { icon: "edit", title: "Edit User", onPress: () => handleOptionPress("Edit User") },
-    { icon: "users", title: "Family", onPress: () => router.push(`/userOptions/family`)}, // New Family option
+    { icon: "users", title: "Family", onPress: () => router.push(`/family`)}, // New Family option
     { icon: "star", title: "Rate App", onPress: requestReview },
     { icon: "message-square", title: "Feature Request", onPress: () => sendEmail("Feature Request") },
     { icon: "alert-circle", title: "Report a Bug", onPress: () => sendEmail("Bug Report") },
-    { icon: "help-circle", title: "FAQ", onPress: () => handleOptionPress("FAQ") },
+    { icon: "help-circle", title: "FAQ", onPress: () => router.push(`/faq`) },
+    { icon: "help-circle", title: "Analytics", onPress: () => router.push(`/analytics`) },
     { icon: "sun", title: isDark ? "Light Mode" : "Dark Mode", onPress: toggleTheme },
     { icon: "log-out", title: "Logout", onPress: logout, textColor: '#FF3B30' }
   ];

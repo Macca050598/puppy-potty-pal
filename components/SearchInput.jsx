@@ -17,7 +17,7 @@ const SearchInput = ({ initialQuery, colors }) => {
       backgroundColor: colors.background,
       borderRadius: 16,
       borderWidth: 2,
-      borderColor: colors.tint,
+      borderColor: colors.text,
     },
     input: {
       flex: 1,
@@ -29,7 +29,7 @@ const SearchInput = ({ initialQuery, colors }) => {
     searchIcon: {
       width: 20,
       height: 20,
-      tintColor: colors.tint,
+      tintColor: colors.text,
     },
   });
 
@@ -39,7 +39,7 @@ const SearchInput = ({ initialQuery, colors }) => {
         style={styles.input}
         value={query}
         placeholder="Search for a breed of dog"
-        placeholderTextColor={colors.tint}
+        placeholderTextColor={colors.text}
         onChangeText={(e) => setQuery(e)}
       />
 

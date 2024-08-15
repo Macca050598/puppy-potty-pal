@@ -58,7 +58,7 @@ const Home = () => {
     },
     welcomeText: {
       fontSize: 14,
-      color: colors.accent,
+      color: colors.primary,
     },
     companyName: {
       fontSize: 24,
@@ -158,7 +158,7 @@ const Home = () => {
       try {
         const dogIds = dogs.map(dog => dog.$id);
         const events = await getAllDogsToiletEvents(dogIds);
-        getAllDogsToiletEvents(events);
+        // getAllDogsToiletEvents(events);
       } catch (error) {
         console.error("Error fetching toilet events:", error);
         // Handle error (e.g., show an alert to the user)
@@ -330,7 +330,7 @@ const Home = () => {
       />
 
       <View style={styles.predictionContainer}>
-        <NextTripPrediction selectedDog={selectedDog} colors={colors}/>
+        <NextTripPrediction selectedDog={selectedDog} colors={colors.primary}/>
       </View>
 
       <AddNewDog

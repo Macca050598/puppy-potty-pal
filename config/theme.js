@@ -3,30 +3,26 @@ import { Appearance } from 'react-native';
 
 export const colors = {
   light: {
-    primary: "#10b9fd",    // Light mode primary color (Bright Blue)
-    secondary: "#767ffe",  // Light mode secondary color (Soft Purple-Blue)
-    tertiary: "#f9fdff",   // Light mode background color (Very Light Blue/White)
-    accent: "#6548fd",     // Light mode accent color (Deep Purple)
-    random: "#e1f3ff",     // Light blue for background highlights
-    tint: "#a3d8ff",       // Lighter blue tint for subtle elements
-    background: "#f9fdff", // Background color (Very Light Blue/White)
-    text: "#000e13",       // Text color (Very Dark Blue)
+    primary: "#FF6B6B",    // Coral
+    secondary: "#FFA86B",  // Light Orange
+    tertiary: "#FFF3E0",   // Warm White
+    accent: "#4ECDC4",     // Turquoise
+    random: "#FFE0B2",     // Light Peach
+    tint: "#FFCCBC",       // Pale Pink
+    background: "#FFF3E0", // Warm White
+    text: "#2C3E50",       // Dark Slate
   },
   dark: {
-    primary: "#0a8cd1",    // Dark mode primary color (Muted Bright Blue)
-    secondary: "#5c68d7",  // Dark mode secondary color (Darker Soft Purple-Blue)
-    tertiary: "#0b0f14",   // Dark mode background color (Very Dark Blue)
-    accent: "#4a3ac1",     // Dark mode accent color (Deep Muted Purple)
-    random: "#132436",     // Darker blue for background highlights
-    tint: "#334f67",       // Dark blue-gray tint for subtle elements
-    background: "#0b0f14", // Background color (Very Dark Blue)
-    text: "#f9fdff",       // Text color (Very Light Blue/White)
+    primary: "#E74C3C",    // Darker Coral
+    secondary: "#E67E22",  // Burnt Orange
+    tertiary: "#2C3E50",   // Dark Slate
+    accent: "#1ABC9C",     // Dark Turquoise
+    random: "#34495E",     // Midnight Blue
+    tint: "#7F8C8D",       // Cool Gray
+    background: "#2C3E50", // Dark Slate
+    text: "#ECF0F1",       // Off-White
   }
 };
-
-
-
-
 
 const ThemeContext = createContext();
 

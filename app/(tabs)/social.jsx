@@ -47,7 +47,7 @@ const Social = () => {
     welcomeText: {
       fontWeight: '500',
       fontSize: 14,
-      color: colors.tint,
+      color: colors.primary,
     },
     titleText: {
       fontSize: 24,
@@ -57,7 +57,7 @@ const Social = () => {
     plusIcon: {
       width: 36,
       height: 40,
-      tintColor: colors.tint,
+      tintColor: colors.primary,
     },
     latestPostsContainer: {
       width: '100%',
@@ -66,7 +66,7 @@ const Social = () => {
       paddingBottom: 32,
     },
     latestPostsText: {
-      color: colors.tint,
+      color: colors.text,
       fontSize: 18,
       fontWeight: '400',
       marginBottom: 12,

@@ -8,7 +8,7 @@ import { createFamily, getUserFamilies, joinFamily } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import FamilyManagementModal from '../../components/FamilyManagementModal';
 import { Feather } from '@expo/vector-icons';
-
+import { StatusBar } from 'expo-status-bar';
 const Family = () => {
   const { colors } = useTheme();
   const navigation = useNavigation();
@@ -205,6 +205,8 @@ const Family = () => {
         onUpdate={fetchFamilies}
         currentUserId={user.$id}
       />
+              <StatusBar backgroundColor={colors.accent} style={colors.primary === '#FFFFFF' ? 'light' : 'dark'}/>
+
     </AuthenticatedLayout>
   );
 };
