@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { createFamily, getUserFamilies, joinFamily } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import FamilyManagementModal from '../../components/FamilyManagementModal';
-import { Feather } from '@expo/vector-icons'; // Import Feather icons
+import { Feather } from '@expo/vector-icons';
 
 const Family = () => {
   const { colors } = useTheme();
@@ -58,8 +58,8 @@ const Family = () => {
       return;
     }
     try {
-      await joinFamily(user.$id, familyCode);
-      Alert.alert('Success', 'Joined family successfully!');
+      const result = await joinFamily(user.$id, familyCode);
+      Alert.alert('Success', `Joined family "${result.family.name}" successfully!`);
       setFamilyCode('');
       fetchFamilies();
     } catch (error) {
@@ -76,22 +76,21 @@ const Family = () => {
     <TouchableOpacity onPress={() => handleFamilyPress(item)}>
       <View style={styles.familyItem}>
         <Text style={[styles.familyName, { color: colors.text }]}>{item.name}</Text>
-        
         <Text style={[styles.familyCode, { color: colors.tint }]}>Code: {item.code}</Text>
-        
       </View>
-      
     </TouchableOpacity>
   );
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
+       height: '100%'
     },
     content: {
       flex: 1,
       padding: 20,
+      height: '100%'
     },
     title: {
       fontSize: 24,
@@ -108,11 +107,12 @@ const Family = () => {
       marginBottom: 10,
       paddingHorizontal: 10,
       color: colors.text,
+      marginTop: 5,
     },
     button: {
       padding: 15,
       borderRadius: 5,
-      backgroundColor: colors.tint,
+      backgroundColor: colors.secondary,
       alignItems: 'center',
       marginBottom: 10,
     },
@@ -122,7 +122,7 @@ const Family = () => {
       color: colors.background,
     },
     familyItem: {
-      backgroundColor: colors.background,
+      backgroundColor: colors.secondary,
       padding: 15,
       borderRadius: 5,
       marginBottom: 10,
@@ -140,6 +140,11 @@ const Family = () => {
       color: colors.text,
       marginBottom: 20,
     },
+    text: {
+      fontSize: 16,
+      fontWeight: 200,
+      marginBottom: 5,
+    }
   });
 
   return (
@@ -154,13 +159,14 @@ const Family = () => {
             <FlatList
               data={families}
               renderItem={renderFamilyItem}
-              keyExtractor={(item) => item.$id} // Ensure this is a string
+              keyExtractor={(item) => item.$id}
               style={{ marginBottom: 20 }}
             />
           ) : (
             <Text style={styles.noFamilyMessage}>You aren't currently a part of any families</Text>
           )}
 
+        <Text style={styles.familyName}>Create a Family</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter family name"
@@ -172,9 +178,10 @@ const Family = () => {
             style={styles.button}
             onPress={handleCreateFamily}
           >
-            <Text style={styles.buttonText}>Create Family</Text>
+            <Text style={styles.buttonText}>Create</Text>
           </TouchableOpacity>
 
+          <Text style={styles.familyName}>Join a Family</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter family code"
@@ -186,7 +193,7 @@ const Family = () => {
             style={styles.button}
             onPress={handleJoinFamily}
           >
-            <Text style={styles.buttonText}>Join Family</Text>
+            <Text style={styles.buttonText}>Join</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -196,6 +203,7 @@ const Family = () => {
         family={selectedFamily}
         onClose={() => setModalVisible(false)}
         onUpdate={fetchFamilies}
+        currentUserId={user.$id}
       />
     </AuthenticatedLayout>
   );

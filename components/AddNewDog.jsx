@@ -47,7 +47,7 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
       borderRadius: 20,
       padding: 20,
       width: '80%',
@@ -119,7 +119,6 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
           <TextInput
             style={styles.input}
             placeholder="Dog Name"
-            placeholderTextColor={colors.tint}
             value={newDogName}
             onChangeText={setNewDogName}
           />
@@ -127,7 +126,6 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
           <TextInput
             style={styles.input}
             placeholder="Dog Breed"
-            placeholderTextColor={colors.tint}
             value={newDogBreed}
             onChangeText={setNewDogBreed}
           />

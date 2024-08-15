@@ -20,7 +20,7 @@ const Search = () => {
 
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
       flex: 1,
     },
     header: {

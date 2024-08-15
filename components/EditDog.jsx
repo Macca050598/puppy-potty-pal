@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet } fro
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { updateDog, deleteDog, getDog } from '../lib/appwrite';
 
-const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors }) => {
+const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors, isOwnedByUser }) => {
   const [dogName, setDogName] = useState('');
   const [dogBreed, setDogBreed] = useState('');
   const [dogDOB, setDogDOB] = useState(new Date());
@@ -32,6 +32,7 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
   };
 
   const handleUpdateDog = async () => {
+    if (!isOwnedByUser) return;
     try {
       const updatedDog = await updateDog(dogId, dogName, dogBreed, dogDOB.toISOString());
       onDogUpdated(updatedDog);
@@ -43,6 +44,7 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
   };
 
   const handleDeleteDog = async () => {
+    if (!isOwnedByUser) return;
     Alert.alert(
       "Delete Dog",
       "Are you sure you want to delete this dog? This action cannot be undone.",
@@ -68,7 +70,7 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
 
   const onChangeDOB = (event, selectedDate) => {
     setShowDatePicker(false);
-    if (selectedDate) {
+    if (selectedDate && isOwnedByUser) {
       setDogDOB(selectedDate);
     }
   };
@@ -81,7 +83,7 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
       borderRadius: 20,
       padding: 20,
       width: '80%',
@@ -140,6 +142,14 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
     },
     actionButtonText: {
       color: colors.accent,
+    },disabledInput: {
+      opacity: 0.5,
+    },
+    ownershipNote: {
+      color: colors.tint,
+      fontStyle: 'italic',
+      marginBottom: 10,
+      textAlign: 'center',
     },
   });
 
@@ -157,33 +167,37 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
     <Modal visible={isVisible} animationType="fade" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.title}>Edit Dog</Text>
+          <Text style={styles.title}>{isOwnedByUser ? "Edit Dog" : "Dog Details"}</Text>
           
+          {!isOwnedByUser && (
+            <Text style={styles.ownershipNote}>This is a family dog. You cannot edit its details.</Text>
+          )}
+
           <TextInput
-            style={styles.input}
+            style={[styles.input, !isOwnedByUser && styles.disabledInput]}
             placeholder="Dog Name"
-            placeholderTextColor={colors.tint}
             value={dogName}
             onChangeText={setDogName}
+            editable={isOwnedByUser}
           />
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, !isOwnedByUser && styles.disabledInput]}
             placeholder="Dog Breed"
-            placeholderTextColor={colors.tint}
             value={dogBreed}
             onChangeText={setDogBreed}
+            editable={isOwnedByUser}
           />
 
           <Text style={[styles.datePickerText, { marginBottom: 5 }]}>Date of Birth:</Text>
           <TouchableOpacity 
-            style={styles.datePickerButton}
-            onPress={() => setShowDatePicker(true)}
+            style={[styles.datePickerButton, !isOwnedByUser && styles.disabledInput]}
+            onPress={() => isOwnedByUser && setShowDatePicker(true)}
           >
             <Text style={styles.datePickerText}>{dogDOB.toLocaleDateString()}</Text>
           </TouchableOpacity>
 
-          {showDatePicker && (
+          {showDatePicker && isOwnedByUser && (
             <DateTimePicker
               value={dogDOB}
               mode="date"
@@ -198,20 +212,24 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
               style={[styles.button, styles.cancelButton]}
               onPress={onClose}
             >
-              <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
+              <Text style={[styles.buttonText, styles.cancelButtonText]}>Close</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.button, styles.updateButton]}
-              onPress={handleUpdateDog}
-            >
-              <Text style={[styles.buttonText, styles.actionButtonText]}>Update</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.button, styles.deleteButton]}
-              onPress={handleDeleteDog}
-            >
-              <Text style={[styles.buttonText, styles.actionButtonText]}>Delete</Text>
-            </TouchableOpacity>
+            {isOwnedByUser && (
+              <>
+                <TouchableOpacity 
+                  style={[styles.button, styles.updateButton]}
+                  onPress={handleUpdateDog}
+                >
+                  <Text style={[styles.buttonText, styles.actionButtonText]}>Update</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.button, styles.deleteButton]}
+                  onPress={handleDeleteDog}
+                >
+                  <Text style={[styles.buttonText, styles.actionButtonText]}>Delete</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </View>

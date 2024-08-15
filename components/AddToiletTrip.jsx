@@ -86,7 +86,7 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip = [], colors }) => {
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
       borderRadius: 20,
       padding: 20,
       width: '80%',

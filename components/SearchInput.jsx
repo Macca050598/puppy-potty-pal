@@ -14,7 +14,7 @@ const SearchInput = ({ initialQuery, colors }) => {
       width: '100%',
       height: 64,
       paddingHorizontal: 16,
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
       borderRadius: 16,
       borderWidth: 2,
       borderColor: colors.tint,

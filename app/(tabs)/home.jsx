@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getUserDogs, getDogToiletEvents, addToiletEvent, updateToiletEvent } from '../../lib/appwrite';
+import { getUserDogs, getDogToiletEvents, addToiletEvent, updateToiletEvent, getUserAndFamilyDogs, getAllDogsToiletEvents, setToiletEvents } from '../../lib/appwrite';
 import AddNewDog from '../../components/AddNewDog';
 import AddToiletTrip from '../../components/AddToiletTrip';
 import NextTripPrediction from '../../utils/NextTripPrediction';
@@ -43,7 +43,7 @@ const Home = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
     },
     scrollContent: {
       padding: 20,
@@ -54,11 +54,11 @@ const Home = () => {
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 20,
-      backgroundColor: colors.accent,
+      backgroundColor: colors.background,
     },
     welcomeText: {
       fontSize: 14,
-      color: colors.tint,
+      color: colors.accent,
     },
     companyName: {
       fontSize: 24,
@@ -133,10 +133,42 @@ const Home = () => {
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: `${colors.accent}E6`,
+      backgroundColor: `${colors.background}E6`,
       padding: 10,
     },
   });
+ 
+  useEffect(() => {
+    const fetchDogs = async () => {
+      try {
+        const allDogs = await getUserAndFamilyDogs(user.$id);
+        setSelectedDog(allDogs[0]);
+        setDogs(allDogs);
+      } catch (error) {
+        console.error("Error fetching dogs:", error);
+        // Handle error (e.g., show an alert to the user)
+      }
+    };
+  
+    fetchDogs();
+  }, [user.$id]);
+
+  useEffect(() => {
+    const fetchToiletEvents = async () => {
+      try {
+        const dogIds = dogs.map(dog => dog.$id);
+        const events = await getAllDogsToiletEvents(dogIds);
+        getAllDogsToiletEvents(events);
+      } catch (error) {
+        console.error("Error fetching toilet events:", error);
+        // Handle error (e.g., show an alert to the user)
+      }
+    };
+  
+    if (dogs.length > 0) {
+      fetchToiletEvents();
+    }
+  }, [dogs]);
   
   const handleEditTrip = async (updatedTrip) => {
     try {
@@ -315,13 +347,13 @@ const Home = () => {
         colors={colors}
       />
 
-      <EditDog
+<EditDog
         isVisible={isEditDogModalVisible}
         onClose={() => setIsEditDogModalVisible(false)}
         onDogUpdated={(updatedDog) => {
-          setDogs(dogs.map(dog => dog.$id === updatedDog.$id ? updatedDog : dog));
+          setDogs(dogs.map(dog => dog.$id === updatedDog.$id ? { ...updatedDog, isOwnedByUser: true } : dog));
           if (selectedDog && selectedDog.$id === updatedDog.$id) {
-            setSelectedDog(updatedDog);
+            setSelectedDog({ ...updatedDog, isOwnedByUser: true });
           }
         }}
         onDogDeleted={(deletedDogId) => {
@@ -331,6 +363,7 @@ const Home = () => {
           }
         }}
         dogId={selectedDogForEdit ? selectedDogForEdit.$id : null}
+        isOwnedByUser={selectedDogForEdit ? selectedDogForEdit.isOwnedByUser : true}
         colors={colors}
       />
 

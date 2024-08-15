@@ -1,34 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList, Modal } from 'react-native';
 import { useTheme } from '../config/theme';
-import { updateFamily, removeUserFromFamily, deleteFamily } from '../lib/appwrite';
+import { updateFamily, removeUserFromFamily, deleteFamily, leaveFamily, getUserDogs, getFamilyDogs, updateFamilyDogs, getAllUsers, updateFamilyMembers } from '../lib/appwrite';
+import AuthenticatedLayout from './AuthenticatedLayout';
 
-const FamilyManagementModal = ({ visible, family, onClose, onUpdate }) => {
+const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUserId }) => {
   const { colors } = useTheme();
   const [editedFamilyName, setEditedFamilyName] = useState(family?.name || '');
+  const [familyDogs, setFamilyDogs] = useState([]);
+  const [selectedDogs, setSelectedDogs] = useState({});
+  const [allUsers, setAllUsers] = useState([]);
+  const [selectedMembers, setSelectedMembers] = useState({});
+  
+  const isAdmin = family && family.admin_id === currentUserId;
 
   useEffect(() => {
-    setEditedFamilyName(family?.name || '');
+    if (family) {
+      setEditedFamilyName(family.name);
+      fetchFamilyDogs();
+      fetchAllUsers();
+      initializeSelectedMembers();
+    }
   }, [family]);
+
+  const fetchFamilyDogs = async () => {
+    try {
+      const dogs = await getFamilyDogs(family.$id);
+      setFamilyDogs(dogs);
+      const dogsObj = {};
+      dogs.forEach(dog => {
+        dogsObj[dog.$id] = true;
+      });
+      setSelectedDogs(dogsObj);
+    } catch (error) {
+      console.error("Error fetching family dogs:", error);
+    }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const users = await getAllUsers();
+      setAllUsers(users);
+    } catch (error) {
+      console.error("Error fetching all users:", error);
+    }
+  };
+
+  const initializeSelectedMembers = () => {
+    const membersObj = {};
+    family.members.forEach(memberId => {
+      membersObj[memberId] = true;
+    });
+    setSelectedMembers(membersObj);
+  };
 
   const handleUpdateFamily = async () => {
     try {
       await updateFamily(family.$id, editedFamilyName);
+      if (isAdmin) {
+        await updateFamilyDogs(family.$id, selectedDogs);
+        await updateFamilyMembers(family.$id, selectedMembers);
+      }
       Alert.alert('Success', 'Family updated successfully!');
       onUpdate();
       onClose();
     } catch (error) {
       Alert.alert('Error', 'Failed to update family: ' + error.message);
-    }
-  };
-
-  const handleRemoveUser = async (userId) => {
-    try {
-      await removeUserFromFamily(family.$id, userId);
-      Alert.alert('Success', 'User removed from family successfully!');
-      onUpdate();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to remove user: ' + error.message);
     }
   };
 
@@ -56,43 +93,97 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate }) => {
     );
   };
 
-  const renderMemberItem = ({ item }) => (
-    <View style={styles.memberItem}>
-      <Text style={[styles.memberName, { color: colors.text }]}>{item.username}</Text>
-      {family.admin_id !== item.$id && (
-        <TouchableOpacity onPress={() => handleRemoveUser(item.$id)}>
-          <Text style={[styles.removeButton, { color: colors.error }]}>Remove</Text>
+  const handleLeaveFamily = async () => {
+    Alert.alert(
+      'Leave Family',
+      'Are you sure you want to leave this family?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Leave', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await leaveFamily(currentUserId, family.$id);
+              Alert.alert('Success', 'You have left the family successfully');
+              onUpdate();
+              onClose();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to leave family: ' + error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const renderDogItem = ({ item }) => (
+    <View style={styles.dogItem}>
+      <Text style={styles.dogName}>{item.name}</Text>
+      {isAdmin && (
+        <TouchableOpacity 
+          style={styles.checkbox}
+          onPress={() => toggleDogSelection(item.$id)}
+        >
+          {selectedDogs[item.$id] && <View style={styles.checked} />}
         </TouchableOpacity>
       )}
     </View>
   );
+
+  const toggleDogSelection = (dogId) => {
+    if (isAdmin) {
+      setSelectedDogs(prev => ({...prev, [dogId]: !prev[dogId]}));
+    }
+  };
+
+  const renderMemberItem = ({ item }) => (
+    <View style={styles.memberItem}>
+      <Text style={styles.memberName}>{item.username}</Text>
+      {isAdmin && family.admin_id !== item.$id && (
+        <TouchableOpacity 
+          style={styles.checkbox}
+          onPress={() => toggleMemberSelection(item.$id)}
+        >
+          {selectedMembers[item.$id] && <View style={styles.checked} />}
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  const toggleMemberSelection = (memberId) => {
+    if (isAdmin && family.admin_id !== memberId) {
+      setSelectedMembers(prev => ({...prev, [memberId]: !prev[memberId]}));
+    }
+  };
 
   const styles = StyleSheet.create({
     modalContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: 'rgba(0, 0, 0)',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-      backgroundColor: colors.primary,
+      backgroundColor: colors.background,
       padding: 20,
       borderRadius: 10,
       width: '80%',
+      maxHeight: '80%',
     },
     modalTitle: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: colors.accent  ,
+      color: colors.secondary,
       marginBottom: 10,
     },
     input: {
       borderWidth: 1,
-      borderColor: colors.accent,
+      borderColor: colors.secondary,
       borderRadius: 5,
       padding: 10,
       marginBottom: 10,
-      color: colors.accent,
+      color: colors.secondary,
     },
     memberItem: {
       flexDirection: 'row',
@@ -102,13 +193,10 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate }) => {
     },
     memberName: {
       fontSize: 16,
-      color: colors.accent,
-    },
-    removeButton: {
-      fontSize: 14,
+      color: colors.secondary,
     },
     button: {
-      backgroundColor: colors.accent,
+      backgroundColor: colors.secondary,
       padding: 10,
       borderRadius: 5,
       alignItems: 'center',
@@ -119,12 +207,52 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate }) => {
       fontWeight: 'bold',
     },
     deleteButton: {
-      backgroundColor: colors.accent,
+      backgroundColor: colors.secondary,
       padding: 10,
       borderRadius: 5,
       alignItems: 'center',
       marginTop: 10,
     },
+    dogItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 5,
+    },
+    dogName: {
+      fontSize: 16,
+      color: colors.secondary,
+    },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderWidth: 1,
+      borderColor: colors.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    checked: {
+      width: 12,
+      height: 12,
+      backgroundColor: colors.secondary,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.secondary,
+      marginTop: 10,
+      marginBottom: 5,
+    },
+    dogItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 5,
+      },
+      dogName: {
+        fontSize: 16,
+        color: colors.text,
+      },
   });
 
   return (
@@ -134,34 +262,53 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate }) => {
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Manage Family</Text>
-          <TextInput
-            style={styles.input}
-            value={editedFamilyName}
-            onChangeText={setEditedFamilyName}
-            placeholder="Family Name"
-            placeholderTextColor={colors.placeholder}
-          />
-          <FlatList
-            data={family?.members || []}
-            renderItem={renderMemberItem}
-            keyExtractor={(item) => item.$id} // Ensure this is a string
-          />
-          <TouchableOpacity style={styles.button} onPress={handleUpdateFamily}>
-            <Text style={styles.buttonText}>Update Family</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteFamily}>
-            <Text style={styles.buttonText}>Delete Family</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>Close</Text>
-          </TouchableOpacity>
+      <AuthenticatedLayout>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Manage Family</Text>
+            <TextInput
+              style={styles.input}
+              value={editedFamilyName}
+              onChangeText={setEditedFamilyName}
+              placeholder="Family Name"
+              placeholderTextColor={colors.placeholder}
+              editable={isAdmin}
+            />
+            <Text style={styles.sectionTitle}>Family Dogs</Text>
+            <FlatList
+              data={familyDogs}
+              renderItem={renderDogItem}
+              keyExtractor={(item) => item.$id}
+            />
+            <Text style={styles.sectionTitle}>Family Members</Text>
+            <FlatList
+              data={allUsers.filter(user => family.members.includes(user.$id))}
+              renderItem={renderMemberItem}
+              keyExtractor={(item) => item.$id}
+            />
+            {isAdmin ? (
+              <>
+                <TouchableOpacity style={styles.button} onPress={handleUpdateFamily}>
+                  <Text style={styles.buttonText}>Update Family</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteFamily}>
+                  <Text style={styles.buttonText}>Delete Family</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity style={styles.deleteButton} onPress={handleLeaveFamily}>
+                <Text style={styles.buttonText}>Leave Family</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.button} onPress={onClose}>
+              <Text style={styles.buttonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </AuthenticatedLayout>
     </Modal>
   );
 };
+
 
 export default FamilyManagementModal;

@@ -13,7 +13,7 @@ const OptionItem = ({ icon, title, onPress, textColor }) => {
   const { colors } = useTheme();
   return (
     <TouchableOpacity 
-      style={[styles.optionItem, { backgroundColor: colors.accent }]} 
+      style={[styles.optionItem, { backgroundColor: colors.background }]} 
       onPress={onPress}
     >
       <Feather name={icon} size={24} color={textColor || colors.tint} />
@@ -113,8 +113,8 @@ const Profile = () => {
 
   return (
     <AuthenticatedLayout>
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.accent }]}>
-        <View style={[styles.profileSection, { backgroundColor: colors.accent }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.profileSection, { backgroundColor: colors.background }]}>
           <Image
             source={{ uri: user?.avatar || 'https://via.placeholder.com/100' }}
             style={styles.profileImage}

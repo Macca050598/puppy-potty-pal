@@ -38,7 +38,7 @@ const Profile = () => {
 
   return (
     <AuthenticatedLayout>
-          <SafeAreaView style={{ backgroundColor: colors.accent, flex: 1 }}>
+          <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
         <FlatList
           data={posts}
           keyExtractor={(item) => item.$id}
