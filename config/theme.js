@@ -3,7 +3,7 @@ import { Appearance } from 'react-native';
 
 export const colors = {
   light: {
-    primary: "#FF6B6B",    // Coral
+    primary: "#E67E22",    // Burnt Orange
     secondary: "#FFA86B",  // Light Orange
     tertiary: "#FFF3E0",   // Warm White
     accent: "#4ECDC4",     // Turquoise
@@ -23,6 +23,29 @@ export const colors = {
     text: "#ECF0F1",       // Off-White
   }
 };
+
+// export const colors = {
+//   light: {
+//     primary: "#015eea",    // Dark blue (as specified)
+//     secondary: "#00c0fa",  // Light blue (as specified)
+//     tertiary: "#f0f8ff",   // Very light blue for background
+//     accent: "#ff6b00",     // Orange for accent (complementary to blue)
+//     random: "#e6f3ff",     // Lighter blue for highlights
+//     tint: "#b3d9ff",       // Mid-light blue for subtle elements
+//     background: "#ffffff", // White background
+//     text: "#017eef",       // Text color (as specified)
+//   },
+//   dark: {
+//     primary: "#0147b3",    // Darker version of the light mode primary
+//     secondary: "#0096c7",  // Darker version of the light mode secondary
+//     tertiary: "#001a33",   // Very dark blue for background
+//     accent: "#cc5500",     // Darker orange for accent
+//     random: "#002b4d",     // Dark blue for highlights
+//     tint: "#004d99",       // Darker blue for subtle elements
+//     background: "#000d1a", // Very dark blue background
+//     text: "#ffffff",       // White text for contrast
+//   }
+// };
 
 const ThemeContext = createContext();
 

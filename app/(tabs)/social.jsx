@@ -81,12 +81,14 @@ const Social = () => {
           keyExtractor={(item) => item.$id}
           renderItem={({ item }) => (
             <VideoCard
+            $id={item.$id} // Ensure this is correct
               title={item.title}
               thumbnail={item.thumbnail}
               video={item.video}
               creator={item.creator.username}
               avatar={item.creator.avatar}
               colors={colors}
+              likes={item.likes}
             />
           )}
           ListHeaderComponent={() => (
@@ -113,7 +115,9 @@ const Social = () => {
                 <Text style={styles.latestPostsText}>
                   Latest Posts
                 </Text>
-                <Trending posts={latestPosts ?? []} colors={colors} />
+                <Trending 
+                posts={latestPosts ?? []} 
+                colors={colors} />
               </View>
             </View>
           )}

@@ -11,6 +11,7 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import EditToiletTrip from '../../components/EditToiletTrip';
 import { useTheme } from '../../config/theme';
+import { Feather } from '@expo/vector-icons';
 
 const groupEventsByDay = (events) => {
   const grouped = events.reduce((acc, event) => {
@@ -74,18 +75,6 @@ const Home = () => {
       color: colors.text,
       fontWeight: 'bold',
     },
-    addTripButton: {
-      backgroundColor: colors.primary,
-      padding: 15,
-      borderRadius: 5,
-      alignItems: 'center',
-      marginBottom: 20,
-    },
-    addTripButtonText: {
-      color: colors.text,
-      fontSize: 18,
-      fontWeight: 'bold',
-    },
     dogList: {
       marginBottom: 20,
     },
@@ -122,7 +111,7 @@ const Home = () => {
       color: colors.text,
     },
     eventTime: {
-      color: colors.tint,
+      color: colors.text,
     },
     emptyText: {
       color: colors.tint,
@@ -136,6 +125,53 @@ const Home = () => {
       backgroundColor: `${colors.background}E6`,
       padding: 10,
     },
+    addButton: {
+      position: 'absolute',
+      right: 20,
+      bottom: 20,
+      backgroundColor: colors.primary,
+      borderRadius: 30,
+      width: 60,
+      height: 60,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 5,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+    },
+    summaryCard: {
+      backgroundColor: colors.card,
+      borderRadius: 10,
+      padding: 15,
+      marginBottom: 20,
+    },
+    summaryTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 10,
+      alignItems: 'center',
+      alignContent: 'center',
+      paddingBottom: 5,
+
+    },
+    summaryTitleContainer: {
+      alignItems: 'center',
+      alignContent: 'center',
+    },
+    summaryContent: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+    },
+    summaryItem: {
+      alignItems: 'center',
+    },
+    summaryText: {
+      color: colors.text,
+      marginTop: 5,
+    },
   });
  
   useEffect(() => {
@@ -146,7 +182,6 @@ const Home = () => {
         setDogs(allDogs);
       } catch (error) {
         console.error("Error fetching dogs:", error);
-        // Handle error (e.g., show an alert to the user)
       }
     };
   
@@ -158,10 +193,9 @@ const Home = () => {
       try {
         const dogIds = dogs.map(dog => dog.$id);
         const events = await getAllDogsToiletEvents(dogIds);
-        // getAllDogsToiletEvents(events);
+        setEvents(events);
       } catch (error) {
         console.error("Error fetching toilet events:", error);
-        // Handle error (e.g., show an alert to the user)
       }
     };
   
@@ -241,7 +275,19 @@ const Home = () => {
     setSelectedDog(newDog);
   };
 
-  const renderHeader = () => (
+const renderHeader = () => {
+  const today = new Date().toDateString();
+  const todayEvents = events.filter(e => new Date(e.timestamp).toDateString() === today);
+  const peeCount = todayEvents.filter(e => e.type === 'wee').length;
+  const pooCount = todayEvents.filter(e => e.type === 'poo').length;
+  const accident = todayEvents.filter(e => 
+    e.type.toLowerCase() === 'inside' || 
+    e.type.toLowerCase() === 'outside' || 
+    e.location.toLowerCase().includes('outside')
+  ).length;
+
+  
+  return (
     <AuthenticatedLayout>
       <View style={styles.header}>
         <View>
@@ -253,10 +299,28 @@ const Home = () => {
         </TouchableOpacity>
       </View>
       
-      <TouchableOpacity onPress={() => setIsAddTripModalVisible(true)} style={styles.addTripButton}>
-        <Text style={styles.addTripButtonText}>Add Trip</Text>
-      </TouchableOpacity>
-     
+      <View style={styles.summaryCard}>
+        <View style={styles.summaryTitleContainer}>
+        <Text style={styles.summaryTitle}>
+          {selectedDog ? `${selectedDog.name}'s Summary Today` : "Today's Summary"}
+        </Text>
+        </View>
+        <View style={styles.summaryContent}>
+          <View style={styles.summaryItem}>
+            <Feather name="droplet" size={24} color={colors.primary} />
+            <Text style={styles.summaryText}>{peeCount} Pee</Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Feather name="target" size={24} color={colors.primary} />
+            <Text style={styles.summaryText}>{pooCount} Poo</Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Feather name="alert-circle" size={24} color={colors.primary} />
+            <Text style={styles.summaryText}>{accident} Accidents</Text>
+          </View>
+        </View>
+      </View>
+
       <FlatList
         horizontal
         data={dogs}
@@ -278,8 +342,10 @@ const Home = () => {
         )}
         style={styles.dogList}
       />
+      
     </AuthenticatedLayout>
   );
+};
 
   const renderEventGroup = ({ item }) => {
     const [date, dayEvents] = item;
@@ -314,6 +380,7 @@ const Home = () => {
             <Text style={styles.eventTime}>{user.username}</Text>
           </TouchableOpacity>
         ))}
+        
       </View>
     );
   };
@@ -333,6 +400,13 @@ const Home = () => {
         <NextTripPrediction selectedDog={selectedDog} colors={colors.primary}/>
       </View>
 
+      <TouchableOpacity 
+        style={styles.addButton} 
+        onPress={() => setIsAddTripModalVisible(true)}
+      >
+        <Feather name="plus" size={30} color={colors.background} />
+      </TouchableOpacity>
+
       <AddNewDog
         isVisible={isAddDogModalVisible}
         onClose={() => setIsAddDogModalVisible(false)}
@@ -347,7 +421,7 @@ const Home = () => {
         colors={colors}
       />
 
-<EditDog
+      <EditDog
         isVisible={isEditDogModalVisible}
         onClose={() => setIsEditDogModalVisible(false)}
         onDogUpdated={(updatedDog) => {
@@ -374,11 +448,10 @@ const Home = () => {
         trip={selectedTrip}
         colors={colors}
       />
+
       <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
     </SafeAreaView>
   );
 };
-
-
 
 export default Home;

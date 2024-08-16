@@ -3,7 +3,7 @@ import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getUserDogs, getDogToiletEvents } from '../lib/appwrite'; // Adjust path as needed
 import CustomDropdown from './CustomDropdown.jsx';
-import { predictNextTrip } from '../utils/tripPrediction.jsx';
+import { predictNextPooTrip, predictNextWeeTrip } from '../utils/tripPrediction.jsx';
 
 const AddToiletTrip = ({ isVisible, onClose, onAddTrip = [], colors }) => {
   const [selectedDog, setSelectedDog] = useState(null);
@@ -50,7 +50,9 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip = [], colors }) => {
     if (selectedDog) {
       try {
         await onAddTrip(selectedDog.$id, type, location, timestamp);
-        await predictNextTrip(selectedDog.$id);
+        await predictNextWeeTrip(selectedDog.$id);
+        await predictNextPooTrip(selectedDog.$id);
+
         onClose();
       } catch (error) {
         console.error('Failed to add trip or predict next trip:', error);

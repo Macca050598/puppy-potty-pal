@@ -8,9 +8,17 @@ import { signOut } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { useTheme } from '../../config/theme';
-
+import { useState } from 'react';
 const OptionItem = ({ icon, title, onPress, textColor }) => {
   const { colors } = useTheme();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
   return (
     <TouchableOpacity 
       style={[styles.optionItem, { backgroundColor: colors.background }]} 
@@ -23,7 +31,7 @@ const OptionItem = ({ icon, title, onPress, textColor }) => {
   );
 };
 
-const Profile = () => {
+const Options = () => {
   const { user } = useGlobalContext();
   const { colors, toggleTheme, isDark } = useTheme();
 
@@ -122,7 +130,7 @@ const Profile = () => {
           />
           <View style={styles.profileInfo}>
             <Text style={[styles.name, { color: colors.text }]}>{user?.username || 'User Name'}</Text>
-            <Text style={[styles.email, { color: colors.tint }]}>{user?.email || 'user@example.com'}</Text>
+            <Text style={[styles.email, { color: colors.primary }]}>{user?.email || 'user@example.com'}</Text>
           </View>
         </View>
 
@@ -184,4 +192,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Profile;
+export default Options;

@@ -1,33 +1,20 @@
-import { getDogToiletEvents } from '../lib/appwrite';
 import { scheduleNotification } from './notifications';
+import { getDogToiletEvents2 } from '../lib/appwrite';
 
-const TIME_BLOCKS = {
-  MORNING: 0,
-  AFTERNOON: 1,
-  EVENING: 2,
-  NIGHT: 3
-};
-
-const getTimeBlock = (hour) => {
-  if (hour >= 5 && hour < 12) return TIME_BLOCKS.MORNING;
-  if (hour >= 12 && hour < 17) return TIME_BLOCKS.AFTERNOON;
-  if (hour >= 17 && hour < 22) return TIME_BLOCKS.EVENING;
-  return TIME_BLOCKS.NIGHT;
-};
-
-export const predictNextTrip = async (dogId) => {
+export const predictNextWeeTrip = async (dogId) => {
   try {
-    const recentTrips = await getDogToiletEvents(dogId, 10);
+    // Fetch only "wee" events
+    const recentTrips = await getDogToiletEvents2(dogId, 10, "wee");
 
     if (recentTrips.length < 2) {
-      console.log("Not enough data to predict next trip");
+      console.log("Not enough data to predict next wee trip");
       return { interval: null, lastTrip: null };
     }
 
     // Calculate average time between trips
     let totalTimeBetween = 0;
     for (let i = 1; i < recentTrips.length; i++) {
-      const timeDiff = new Date(recentTrips[i-1].timestamp) - new Date(recentTrips[i].timestamp);
+      const timeDiff = new Date(recentTrips[i - 1].timestamp) - new Date(recentTrips[i].timestamp);
       totalTimeBetween += timeDiff;
     }
     const avgTimeBetween = totalTimeBetween / (recentTrips.length - 1);
@@ -38,7 +25,36 @@ export const predictNextTrip = async (dogId) => {
     };
 
   } catch (error) {
-    console.error("Error predicting next trip interval:", error);
+    console.error("Error predicting next wee trip interval:", error);
+    return { interval: null, lastTrip: null };
+  }
+};
+
+export const predictNextPooTrip = async (dogId) => {
+  try {
+    // Fetch only "poo" events
+    const recentTrips = await getDogToiletEvents2(dogId, 10, "poo");
+
+    if (recentTrips.length < 2) {
+      console.log("Not enough data to predict next poo trip");
+      return { interval: null, lastTrip: null };
+    }
+
+    // Calculate average time between trips
+    let totalTimeBetween = 0;
+    for (let i = 1; i < recentTrips.length; i++) {
+      const timeDiff = new Date(recentTrips[i - 1].timestamp) - new Date(recentTrips[i].timestamp);
+      totalTimeBetween += timeDiff;
+    }
+    const avgTimeBetween = totalTimeBetween / (recentTrips.length - 1);
+
+    return {
+      interval: avgTimeBetween,
+      lastTrip: recentTrips[0].timestamp
+    };
+
+  } catch (error) {
+    console.error("Error predicting next poo trip interval:", error);
     return { interval: null, lastTrip: null };
   }
 };

@@ -9,6 +9,7 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import FamilyManagementModal from '../../components/FamilyManagementModal';
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+
 const Family = () => {
   const { colors } = useTheme();
   const navigation = useNavigation();

@@ -1,10 +1,39 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { icons } from '../constants';
 import { Video, ResizeMode } from 'expo-av';
+import { Feather } from '@expo/vector-icons';
+import { likeVideo } from '../lib/appwrite';
 
-const VideoCard = ({ title, creator, avatar, thumbnail, video, colors }) => {
+const VideoCard = ({ title, creator, avatar, thumbnail, video, colors, likes, $id }) => {
   const [play, setPlay] = useState(false);
+  const [likeCount, setLikeCount] = useState(likes || 0);
+  const [isLiked, setIsLiked] = useState(false);
+  const animatedScale = useRef(new Animated.Value(1)).current;
+
+  const handleLike = async () => {
+    console.log('Toggling like for video with id:', $id);
+    try {
+      const result = await likeVideo($id);
+      console.log('Like result:', result);
+      
+      // Toggle the like state
+      setIsLiked(!isLiked);
+      
+      // Update the like count based on whether we're liking or unliking
+      setLikeCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1);
+      
+      // Animate the heart
+      Animated.sequence([
+        Animated.timing(animatedScale, { toValue: 1.2, duration: 100, useNativeDriver: true }),
+        Animated.timing(animatedScale, { toValue: 1, duration: 100, useNativeDriver: true })
+      ]).start();
+    } catch (error) {
+      console.error("Error toggling like for video:", error);
+    }
+  };
+
+  const heartColor = isLiked ? 'red' : 'white';
 
   const styles = StyleSheet.create({
     container: {
@@ -72,6 +101,27 @@ const VideoCard = ({ title, creator, avatar, thumbnail, video, colors }) => {
       position: 'absolute',
       tintColor: colors.primary,
     },
+    likeContainer: {
+      position: 'absolute',
+      bottom: 2,
+      right: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.9)',
+      borderRadius: 12,
+      padding: 4,
+    },
+    likeIcon: {
+      width: 15,
+      height: 15,
+      tintColor: 'white',
+    },
+    likeCount: {
+      marginRight: 5,
+      marginLeft: 5,
+      color: 'white',
+      fontSize: 13,
+    },
   });
 
   return (
@@ -126,7 +176,15 @@ const VideoCard = ({ title, creator, avatar, thumbnail, video, colors }) => {
           />
         </TouchableOpacity>
       )}
-    </View>
+      
+       <TouchableOpacity onPress={handleLike} style={styles.likeContainer}>
+        <Animated.View style={[styles.likeIcon, { transform: [{ scale: animatedScale }] }]}>
+          <Feather name="heart" size={15} color={heartColor} />
+        </Animated.View>
+        <Text style={styles.likeCount}>{likeCount}</Text>
+      </TouchableOpacity>
+        </View>
+
   );
 };
 
