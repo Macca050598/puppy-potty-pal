@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { predictNextWeeTrip, predictNextPooTrip } from '../utils/tripPrediction';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NextTripPrediction = ({ selectedDog, colors }) => {
   const [predictedWeeInterval, setPredictedWeeInterval] = useState(null);
@@ -9,32 +10,61 @@ const NextTripPrediction = ({ selectedDog, colors }) => {
   const [pooPredictionError, setPooPredictionError] = useState(null);
   const [lastWeeTripTime, setLastWeeTripTime] = useState(null);
   const [lastPooTripTime, setLastPooTripTime] = useState(null);
+  const [weePredictionEnabled, setWeePredictionEnabled] = useState(true);
+  const [pooPredictionEnabled, setPooPredictionEnabled] = useState(true);
+
+  useEffect(() => {
+    loadPredictionSettings();
+  }, []);
+
+  const loadPredictionSettings = async () => {
+    try {
+      const weeEnabled = await AsyncStorage.getItem('weePredictionEnabled');
+      const pooEnabled = await AsyncStorage.getItem('pooPredictionEnabled');
+      setWeePredictionEnabled(weeEnabled !== 'false');
+      setPooPredictionEnabled(pooEnabled !== 'false');
+    } catch (error) {
+      console.error('Error loading prediction settings:', error);
+    }
+  };
 
   const updatePredictions = useCallback(async () => {
     if (selectedDog) {
       try {
-        // Predict next wee trip
-        const { interval: weeInterval, lastTrip: lastWeeTrip } = await predictNextWeeTrip(selectedDog.$id);
-        if (weeInterval) {
-          setPredictedWeeInterval(weeInterval);
-          setLastWeeTripTime(lastWeeTrip);
-          setWeePredictionError(null);
+        if (weePredictionEnabled) {
+          // Predict next wee trip
+          const { interval: weeInterval, lastTrip: lastWeeTrip } = await predictNextWeeTrip(selectedDog.$id);
+          if (weeInterval) {
+            setPredictedWeeInterval(weeInterval);
+            setLastWeeTripTime(lastWeeTrip);
+            setWeePredictionError(null);
+          } else {
+            setPredictedWeeInterval(null);
+            setLastWeeTripTime(null);
+            setWeePredictionError("Not enough data to predict next wee trip yet.");
+          }
         } else {
           setPredictedWeeInterval(null);
           setLastWeeTripTime(null);
-          setWeePredictionError("Not enough data to predict next wee trip yet.");
+          setWeePredictionError("Wee prediction alerts are disabled.");
         }
 
-        // Predict next poo trip
-        const { interval: pooInterval, lastTrip: lastPooTrip } = await predictNextPooTrip(selectedDog.$id);
-        if (pooInterval) {
-          setPredictedPooInterval(pooInterval);
-          setLastPooTripTime(lastPooTrip);
-          setPooPredictionError(null);
+        if (pooPredictionEnabled) {
+          // Predict next poo trip
+          const { interval: pooInterval, lastTrip: lastPooTrip } = await predictNextPooTrip(selectedDog.$id);
+          if (pooInterval) {
+            setPredictedPooInterval(pooInterval);
+            setLastPooTripTime(lastPooTrip);
+            setPooPredictionError(null);
+          } else {
+            setPredictedPooInterval(null);
+            setLastPooTripTime(null);
+            setPooPredictionError("Not enough data to predict next poo trip yet.");
+          }
         } else {
           setPredictedPooInterval(null);
           setLastPooTripTime(null);
-          setPooPredictionError("Not enough data to predict next poo trip yet.");
+          setPooPredictionError("Poo prediction alerts are disabled.");
         }
       } catch (error) {
         console.error('Failed to predict next trip:', error);
@@ -55,7 +85,7 @@ const NextTripPrediction = ({ selectedDog, colors }) => {
       setLastPooTripTime(null);
       setPooPredictionError(null);
     }
-  }, [selectedDog]);
+  }, [selectedDog, weePredictionEnabled, pooPredictionEnabled]);
 
   useEffect(() => {
     updatePredictions();
@@ -94,18 +124,18 @@ const NextTripPrediction = ({ selectedDog, colors }) => {
       marginTop: 10,
     },
     predictionTitle: {
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: 'bold',
-      color: colors.text,
       marginBottom: 5,
+      color: colors.text,
     },
     predictionText: {
       fontSize: 14,
-      color: colors.primary,
+      color: colors.text,
     },
     predictionError: {
       fontSize: 14,
-      color: colors.tint,
+      color: colors.error,
     },
   });
 
@@ -113,26 +143,32 @@ const NextTripPrediction = ({ selectedDog, colors }) => {
     <View style={styles.predictionContainer}>
       <Text style={styles.predictionTitle}>Next Predicted Toilet Trips:</Text>
 
-      {/* Display the predicted next wee trip */}
-      {nextWeeTripTime ? (
-        <Text style={styles.predictionText}>
-          {selectedDog.name} might need to wee at {formatPrediction(nextWeeTripTime)}
-        </Text>
+      {weePredictionEnabled ? (
+        nextWeeTripTime ? (
+          <Text style={styles.predictionText}>
+            {selectedDog.name} might need to wee at {formatPrediction(nextWeeTripTime)}
+          </Text>
+        ) : (
+          <Text style={styles.predictionError}>
+            {weePredictionError || `Unable to predict ${selectedDog.name}'s next wee trip.`}
+          </Text>
+        )
       ) : (
-        <Text style={styles.predictionError}>
-          {weePredictionError || `Unable to predict ${selectedDog.name}'s next wee trip.`}
-        </Text>
+        <Text style={styles.predictionError}>Wee prediction alerts are disabled.</Text>
       )}
 
-      {/* Display the predicted next poo trip */}
-      {nextPooTripTime ? (
-        <Text style={styles.predictionText}>
-          {selectedDog.name} might need to poo at {formatPrediction(nextPooTripTime)}
-        </Text>
+      {pooPredictionEnabled ? (
+        nextPooTripTime ? (
+          <Text style={styles.predictionText}>
+            {selectedDog.name} might need to poo at {formatPrediction(nextPooTripTime)}
+          </Text>
+        ) : (
+          <Text style={styles.predictionError}>
+            {pooPredictionError || `Unable to predict ${selectedDog.name}'s next poo trip.`}
+          </Text>
+        )
       ) : (
-        <Text style={styles.predictionError}>
-          {pooPredictionError || `Unable to predict ${selectedDog.name}'s next poo trip.`}
-        </Text>
+        <Text style={styles.predictionError}>Poo prediction alerts are disabled.</Text>
       )}
     </View>
   );

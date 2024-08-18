@@ -181,7 +181,6 @@ const Home = () => {
         setSelectedDog(allDogs[0]);
         setDogs(allDogs);
       } catch (error) {
-        console.error("Error fetching dogs:", error);
       }
     };
   
@@ -283,7 +282,7 @@ const renderHeader = () => {
   const accident = todayEvents.filter(e => 
     e.type.toLowerCase() === 'inside' || 
     e.type.toLowerCase() === 'outside' || 
-    e.location.toLowerCase().includes('outside')
+    e.location.toLowerCase().includes('inside')
   ).length;
 
   

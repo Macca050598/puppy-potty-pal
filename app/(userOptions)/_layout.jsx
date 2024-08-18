@@ -22,6 +22,18 @@ const userOptionsLayout = () => {
             headerShown: false
           }}
         />
+           <Stack.Screen 
+          name="customAlerts"
+          options={{
+            headerShown: false
+          }}
+        />
+         <Stack.Screen 
+          name="editProfile"
+          options={{
+            headerShown: false
+          }}
+        />
         <Stack.Screen 
           name="faq"
           options={{

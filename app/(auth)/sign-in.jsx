@@ -1,14 +1,13 @@
-import { View, Text, ScrollView, Image, Alert } from 'react-native'
-import React, { useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Image, Alert, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalContext } from '../../context/GlobalProvider';
-
+import { useTheme } from '../../config/theme';
 import { images } from '../../constants';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
 import { signIn } from '../../lib/appwrite';
-
 
 const SignIn = () => {
   const [form, setForm] = useState({
@@ -16,70 +15,123 @@ const SignIn = () => {
     password: ''
   }); 
 
-  const [isSubmitting, setisSubmitting] = useState(false)
-  const {setUser, setIsLoggedIn} = useGlobalContext();
-  const submit = async() => {
-    if(!form.email || !form.password) {
-      Alert.alert('Error', 'Please fill in all the fields')
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setUser, setIsLoggedIn } = useGlobalContext();
+  const { colors, isDark } = useTheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.background,
+      flex: 1,
+    },
+    scrollViewContent: {
+      minHeight: '80%',
+      justifyContent: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 24,
+    },
+    logo: {
+      width: 150,
+      height: 150,
+    },
+    title: {
+      fontSize: 24,
+      color: colors.text,
+      fontWeight: '600',
+      marginTop: 40,
+      fontFamily: 'psemibold',
+    },
+    formField: {
+      marginTop: 28,
+    },
+    buttonContainer: {
+      marginTop: 28,
+    },
+    linkContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingTop: 20,
+      gap: 8,
+    },
+    linkText: {
+      fontSize: 16,
+      color: colors.text,
+      fontFamily: 'pregular',
+    },
+    linkHighlight: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.primary,
+    },
+    contentContainer: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+  },
+  });
+
+  const submit = async () => {
+    if (!form.email || !form.password) {
+      Alert.alert('Error', 'Please fill in all the fields');
+      return;
     }
-    setisSubmitting(true);
+    setIsSubmitting(true);
 
-      try {
-          
-          const result = await signIn(form.email, form.password)
+    try {
+      const result = await signIn(form.email, form.password);
+      setUser(result);
+      setIsLoggedIn(result);
+      Alert.alert("Success", "User Signed in successfully!");
+      router.replace('/home');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-          setUser(result);
-          setIsLoggedIn(result);
-          Alert.alert("Success", "User Signed in successfully!")
-          router.replace('/home')
-      } catch (error) {
-        Alert.alert('Error', error.message)
-      } finally {
-        setisSubmitting(false);
-      }
-  }
   return (
-   <SafeAreaView className="bg-primary h-full">
-    <ScrollView>
-      <View className="w-full justify-center min-h-[80vh] px-4 my-6">
-    <Image source={images.dog} resizeMode='contain' className="w-[100px] h-[100px] " />
-    <Text className="text-2xl text-white text-semibold mt-10 font-psemibold">Log in to Puppy Potty Pal</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.contentContainer}>
+        <Image source={images.logoSmall} resizeMode='contain' style={styles.logo} />
+        </View>
+        <Text style={styles.title}>Log in to Puppy Potty Pal</Text>
 
-      <FormField
-        title="Email"
-        value={form.email}
-        handleChangeText={(e) => setForm({ ...form,
-          email: e })}
-          otherStyle="mt-7"
+        <FormField
+          title="Email"
+          value={form.email}
+          handleChangeText={(e) => setForm({ ...form, email: e })}
+          otherStyle={styles.formField}
           keyboardType="email-address"
         />
-      <FormField
+        <FormField
           title="Password"
           value={form.password}
-          handleChangeText={(e) => setForm({ ...form,
-            password: e })}
-            otherStyle="mt-7"
-          />
+          handleChangeText={(e) => setForm({ ...form, password: e })}
+          otherStyle={styles.formField}
+          secureTextEntry
+        />
 
-      <CustomButton
-      title="Sign In"
-      handlePress={submit}
-      containerStyles="mt-7"
-      isLoading={isSubmitting}
-      />
+        <CustomButton
+          title="Sign In"
+          handlePress={submit}
+          containerStyles={styles.buttonContainer}
+          isLoading={isSubmitting}
+        />
 
-      <View className="justify-center pt-5 flex-row gap-2">
-            <Text className="text-lg text-gray-100 font-pregular">
-              Don't have an account ?
-            </Text>
-            <Link href="/sign-up" className='text-lg font-semibold text-secondary-100'>
+        <View style={styles.linkContainer}>
+          <Text style={styles.linkText}>
+            Don't have an account?
+          </Text>
+          <Link href="/sign-up" style={styles.linkHighlight}>
             Sign up
-            </Link>
-      </View>
-      </View>
-    </ScrollView>
-   </SafeAreaView>
-  )
-}
+          </Link>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
-export default SignIn
+export default SignIn;

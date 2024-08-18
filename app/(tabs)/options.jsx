@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, Linking, Alert, Clipboard } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, SectionList, Linking, Alert, Clipboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -8,23 +8,16 @@ import { signOut } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { useTheme } from '../../config/theme';
-import { useState } from 'react';
-const OptionItem = ({ icon, title, onPress, textColor }) => {
-  const { colors } = useTheme();
-  const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
+const OptionItem = ({ icon, title, onPress, textColor, iconColor }) => {
+  const { colors } = useTheme();
 
   return (
     <TouchableOpacity 
       style={[styles.optionItem, { backgroundColor: colors.background }]} 
       onPress={onPress}
     >
-      <Feather name={icon} size={24} color={textColor || colors.tint} />
+      <Feather name={icon} size={24} color={iconColor || colors.primary} />
       <Text style={[styles.optionText, { color: textColor || colors.text }]}>{title}</Text>
       <Feather name="chevron-right" size={24} color={colors.text} />
     </TouchableOpacity>
@@ -108,16 +101,42 @@ const Options = () => {
     }
   };
 
-  const options1 = [
-    { icon: "edit", title: "Edit User", onPress: () => handleOptionPress("Edit User") },
-    { icon: "users", title: "Family", onPress: () => router.push(`/family`)}, // New Family option
-    { icon: "star", title: "Rate App", onPress: requestReview },
-    { icon: "message-square", title: "Feature Request", onPress: () => sendEmail("Feature Request") },
-    { icon: "alert-circle", title: "Report a Bug", onPress: () => sendEmail("Bug Report") },
-    { icon: "help-circle", title: "FAQ", onPress: () => router.push(`/faq`) },
-    { icon: "help-circle", title: "Analytics", onPress: () => router.push(`/analytics`) },
-    { icon: "sun", title: isDark ? "Light Mode" : "Dark Mode", onPress: toggleTheme },
-    { icon: "log-out", title: "Logout", onPress: logout, textColor: '#FF3B30' }
+  const sections = [
+    {
+      title: "Account",
+      data: [
+        { icon: "edit", title: "Edit Profile", onPress: () => router.push(`/editProfile`) },
+        { icon: "users", title: "Family", onPress: () => router.push(`/family`) },
+      ]
+    },
+    {
+      title: "App Settings",
+      data: [
+        { icon: "bell", title: "Custom Alerts", onPress: () => router.push('/customAlerts') },
+        { icon: isDark ? "sun" : "moon", title: isDark ? "Light Mode" : "Dark Mode", onPress: toggleTheme },
+      ]
+    },
+    {
+      title: "Data & Analytics",
+      data: [
+        { icon: "bar-chart-2", title: "Analytics", onPress: () => router.push(`/analytics`) },
+      ]
+    },
+    {
+      title: "Help & Feedback",
+      data: [
+        { icon: "star", title: "Rate App", onPress: requestReview },
+        { icon: "message-square", title: "Feature Request", onPress: () => sendEmail("Feature Request") },
+        { icon: "alert-circle", title: "Report a Bug", onPress: () => sendEmail("Bug Report") },
+        { icon: "help-circle", title: "FAQ", onPress: () => router.push(`/faq`) },
+      ]
+    },
+    {
+      title: "",
+      data: [
+        { icon: "log-out", title: "Logout", onPress: logout, textColor: colors.error, iconColor: colors.error },
+      ]
+    }
   ];
 
   return (
@@ -134,18 +153,24 @@ const Options = () => {
           </View>
         </View>
 
-        <FlatList
-          data={options1}
-          keyExtractor={(item) => item.title}
+        <SectionList
+          sections={sections}
+          keyExtractor={(item, index) => item.title + index}
           renderItem={({ item }) => (
             <OptionItem
               icon={item.icon}
               title={item.title}
               onPress={item.onPress}
               textColor={item.textColor}
+              iconColor={item.iconColor}
             />
           )}
+          renderSectionHeader={({ section: { title } }) => (
+            title ? <Text style={[styles.sectionHeader, { color: colors.primary }]}>{title}</Text> : null
+          )}
+          stickySectionHeadersEnabled={false}
           ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.accent }]} />}
+          SectionSeparatorComponent={() => <View style={styles.sectionSeparator} />}
         />
       </SafeAreaView>
     </AuthenticatedLayout>
@@ -177,6 +202,14 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 16,
   },
+  sectionHeader: {
+    fontSize: 14,
+    fontWeight: '600',
+    paddingHorizontal: 15,
+    paddingTop: 20,
+    paddingBottom: 0,
+    textTransform: 'uppercase',
+  },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -189,6 +222,10 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
+    marginLeft: 54, // Aligns with the start of the text
+  },
+  sectionSeparator: {
+    height: 10,
   },
 });
 

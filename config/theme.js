@@ -6,14 +6,15 @@ export const colors = {
     primary: "#E67E22",    // Burnt Orange
     secondary: "#FFA86B",  // Light Orange
     tertiary: "#FFF3E0",   // Warm White
-    accent: "#4ECDC4",     // Turquoise
+    accent: "#FFFFFF",     // Turquoise
     random: "#FFE0B2",     // Light Peach
     tint: "#FFCCBC",       // Pale Pink
     background: "#FFF3E0", // Warm White
     text: "#2C3E50",       // Dark Slate
   },
   dark: {
-    primary: "#E74C3C",    // Darker Coral
+    // primary: "#E74C3C",    // Darker Coral\
+    primary: "#E67E22",  // Burnt Orange
     secondary: "#E67E22",  // Burnt Orange
     tertiary: "#2C3E50",   // Dark Slate
     accent: "#1ABC9C",     // Dark Turquoise

@@ -20,29 +20,29 @@ export default function App() {
             backgroundColor: colors.background,
         },
         contentContainer: {
-            minHeight: '85%',
+            minHeight: '80%',
             justifyContent: 'center',
             alignItems: 'center',
             paddingHorizontal: 16,
         },
         logo: {
-            width: 130,
-            height: 84,
+            width: 150,
+            height: 150,
         },
         cards: {
             maxWidth: 380,
             width: '100%',
             height: 300,
-            backgroundColor: colors.background,
         },
         titleContainer: {
             position: 'relative',
             marginVertical: 20,
         },
         title: {
-            fontSize: 24,
+            fontSize: 28,
             color: colors.text,
             fontWeight: 'bold',
+            fontFamily: 'pregular',
             textAlign: 'center',
         },
         highlightedText: {
@@ -56,29 +56,36 @@ export default function App() {
             right: -8,
         },
         subtitle: {
-            fontSize: 14,
+            fontSize: 16,
             color: colors.text,
-            marginTop: 28,
+            marginTop: 10,
+            marginBottom: 15,
             textAlign: 'center',
+            fontWeight: '500',
         },
         button: {
             width: '100%',
             marginTop: 28,
-            padding: 15,
+            padding: 20,
+            fontSize: 15,
         },
+        textStyles: {
+            fontSize: 12,
+            padding: 15,
+        }
     });
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.contentContainer}>
                 <Image 
-                    source={images.dog}
+                    source={images.newLogo}
                     style={styles.logo}
                     resizeMode='contain'
                 />
 
                 <Image 
-                    source={images.cards}
+                    source={images.cards2}
                     style={styles.cards}
                     resizeMode='contain'
                 />
@@ -102,7 +109,8 @@ export default function App() {
                 <CustomButton
                     title="Continue with Email"
                     handlePress={() => router.push('/sign-in')}
-                    containerStyles={styles.button}
+                    containerStyles={styles.textStyles}
+                    textStyles={styles.textStyles}
                 />
             </ScrollView>
 
