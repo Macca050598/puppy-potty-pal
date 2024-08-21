@@ -8,7 +8,7 @@ import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
 import { createUser } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
-
+import { StatusBar } from 'expo-status-bar';
 const SignUp = () => {
   const [form, setForm] = useState({
     username: '',
@@ -26,24 +26,24 @@ const SignUp = () => {
       flex: 1,
     },
     scrollViewContent: {
-      minHeight: '90%',
+      minHeight: '80%',
       justifyContent: 'center',
       paddingHorizontal: 16,
       paddingVertical: 24,
     },
     logo: {
-      width: 100,
-      height: 100,
+      width: 150,
+      height: 150,
     },
     title: {
       fontSize: 24,
       color: colors.text,
       fontWeight: '600',
-      marginTop: 40,
+      marginTop: 20,
       fontFamily: 'psemibold',
     },
     formField: {
-      marginTop: 28,
+      marginTop: 0,
     },
     buttonContainer: {
       marginTop: 28,
@@ -84,7 +84,7 @@ const SignUp = () => {
       setUser(result);
       setIsLoggedIn(result);
       Alert.alert("Success", "User Signed up successfully!");
-      router.replace('/social');
+      router.replace('/home');
     } catch (error) {
       Alert.alert('Error', error.message);
     } finally {
@@ -135,6 +135,8 @@ const SignUp = () => {
             Sign in
           </Link>
         </View>
+        <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
+
       </ScrollView>
     </SafeAreaView>
   );

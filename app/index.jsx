@@ -26,8 +26,9 @@ export default function App() {
             paddingHorizontal: 16,
         },
         logo: {
-            width: 150,
-            height: 150,
+            width: 175,
+            height: 175,
+            marginBottom: 0,
         },
         cards: {
             maxWidth: 380,
@@ -79,7 +80,7 @@ export default function App() {
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.contentContainer}>
                 <Image 
-                    source={images.newLogo}
+                    source={images.logo1}
                     style={styles.logo}
                     resizeMode='contain'
                 />
@@ -107,7 +108,7 @@ export default function App() {
                 </Text>
 
                 <CustomButton
-                    title="Continue with Email"
+                    title="Continue To Sign In..."
                     handlePress={() => router.push('/sign-in')}
                     containerStyles={styles.textStyles}
                     textStyles={styles.textStyles}

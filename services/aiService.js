@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { analyzeToiletBreaks, getUserDogs, getDogToiletEvents } from '../lib/appwrite';
+import { analyzeToiletBreaks, getCurrentUserDogs, getDogToiletEvents } from '../lib/appwrite';
 
 const LAST_UPDATE_KEY = 'LAST_AI_UPDATE';
 const UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -24,7 +24,7 @@ export const checkAndUpdateAIInsights = async () => {
     if (Date.now() - lastUpdateTime >= UPDATE_INTERVAL) {
       console.log("Update interval exceeded, fetching new insights");
       
-      const dogs = await getUserDogs();
+      const dogs = await getCurrentUserDogs();
       console.log("Fetched dogs:", dogs.length);
       
       if (dogs.length > 0) {

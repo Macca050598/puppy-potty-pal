@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { getUserDogs, getDogToiletEvents, addToiletEvent } from '../lib/appwrite'; // Adjust path as needed
+import { getCurrentUserDogs, getDogEvents, addToiletEvent } from '../lib/appwrite'; // Adjust path as needed
 
 
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getUserDogs, getDogToiletEvents, addToiletEvent, updateToiletEvent, getUserAndFamilyDogs, getAllDogsToiletEvents, setToiletEvents } from '../../lib/appwrite';
+import { getUserAndFamilyDogs, getAllDogsCombinedEvents, addToiletEvent, addEatingEvent, updateToiletEvent } from '../../lib/appwrite';
 import AddNewDog from '../../components/AddNewDog';
 import AddToiletTrip from '../../components/AddToiletTrip';
 import NextTripPrediction from '../../utils/NextTripPrediction';
@@ -12,6 +12,8 @@ import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import EditToiletTrip from '../../components/EditToiletTrip';
 import { useTheme } from '../../config/theme';
 import { Feather } from '@expo/vector-icons';
+import ChoiceModal from '../../components/AddChoiceModel';
+import AddEatingTrip from '../../components/AddEatingTrip';
 
 const groupEventsByDay = (events) => {
   const grouped = events.reduce((acc, event) => {
@@ -33,13 +35,106 @@ const Home = () => {
   const [dogs, setDogs] = useState([]);
   const [selectedDog, setSelectedDog] = useState(null);
   const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isAddDogModalVisible, setIsAddDogModalVisible] = useState(false);
   const [isAddTripModalVisible, setIsAddTripModalVisible] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [isAddEatingModalVisible, setIsAddEatingModalVisible] = useState(false);
   const [isEditDogModalVisible, setIsEditDogModalVisible] = useState(false);
   const [selectedDogForEdit, setSelectedDogForEdit] = useState();
   const [isEditTripModalVisible, setIsEditTripModalVisible] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState(null);
+  const [isChoiceModalVisible, setIsChoiceModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setRefreshing(true);
+      await fetchDogsAndEvents();
+      setRefreshing(false);
+    };
+    
+  
+    fetchData();
+  }, [fetchDogsAndEvents]);
+  
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchDogsAndEvents();
+    setRefreshing(false);
+  }, [fetchDogsAndEvents]);
+  
+
+  const fetchDogsAndEvents = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+
+    try {
+      // Fetch dogs
+      const allDogs = await getUserAndFamilyDogs(user.$id);
+      setDogs(allDogs);
+
+      // Set the first dog as selected if none is selected
+      if (allDogs.length > 0 && !selectedDog) {
+        setSelectedDog(allDogs[0]);
+      }
+
+      // Fetch events for the selected dog or the first dog in the list
+      const dogId = selectedDog ? selectedDog.$id : allDogs.length > 0 ? allDogs[0].$id : null;
+      if (dogId) {
+        const combinedEvents = await getAllDogsCombinedEvents([dogId]);
+        setEvents(combinedEvents);
+      } else {
+        setEvents([]);
+      }
+    } catch (error) {
+      console.error("Error fetching dogs and events:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, selectedDog]);
+
+  
+
+  useEffect(() => {
+    fetchDogsAndEvents();
+  }, [fetchDogsAndEvents]);
+
+  const handleDogSelection = (dog) => {
+    setSelectedDog(dog);
+  };
+
+  const handleAddTrip = async (dogId, type, location, timestamp) => {
+    try {
+      await addToiletEvent(dogId, type, location, timestamp);
+      fetchDogsAndEvents(); // Refresh data after adding a trip
+    } catch (error) {
+      console.error('Failed to save event:', error);
+    }
+  };
+
+  const handleAddEatingTrip = async (dogId, type, timestamp) => {
+    try {
+      await addEatingEvent(dogId, type, timestamp);
+      fetchDogsAndEvents(); // Refresh data after adding an eating event
+    } catch (error) {
+      console.error('Failed to save eating event:', error);
+    }
+  };
+
+  const handleEditTrip = async (updatedTrip) => {
+    try {
+      await updateToiletEvent(updatedTrip.$id, updatedTrip);
+      fetchDogsAndEvents(); // Refresh data after updating a trip
+    } catch (error) {
+      console.error('Failed to update event:', error);
+    }
+  };
+
+  const handleDogAdded = (newDog) => {
+    setDogs(prevDogs => [...prevDogs, newDog]);
+    setSelectedDog(newDog);
+    fetchDogsAndEvents(); // Refresh data after adding a dog
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -155,7 +250,6 @@ const Home = () => {
       alignItems: 'center',
       alignContent: 'center',
       paddingBottom: 5,
-
     },
     summaryTitleContainer: {
       alignItems: 'center',
@@ -173,178 +267,90 @@ const Home = () => {
       marginTop: 5,
     },
   });
- 
-  useEffect(() => {
-    const fetchDogs = async () => {
-      try {
-        const allDogs = await getUserAndFamilyDogs(user.$id);
-        setSelectedDog(allDogs[0]);
-        setDogs(allDogs);
-      } catch (error) {
-      }
-    };
-  
-    fetchDogs();
-  }, [user.$id]);
 
-  useEffect(() => {
-    const fetchToiletEvents = async () => {
-      try {
-        const dogIds = dogs.map(dog => dog.$id);
-        const events = await getAllDogsToiletEvents(dogIds);
-        setEvents(events);
-      } catch (error) {
-        console.error("Error fetching toilet events:", error);
-      }
-    };
-  
-    if (dogs.length > 0) {
-      fetchToiletEvents();
-    }
-  }, [dogs]);
-  
-  const handleEditTrip = async (updatedTrip) => {
-    try {
-      await updateToiletEvent(updatedTrip.$id, updatedTrip);
-      setEvents(prevEvents => prevEvents.map(event => 
-        event.$id === updatedTrip.$id ? updatedTrip : event
-      ));
-    } catch (error) {
-      console.error('Failed to update event:', error);
-    }
-  };
+  const renderHeader = () => {
+    const today = new Date().toDateString();
+    const todayEvents = events.filter(e => new Date(e.timestamp).toDateString() === today);
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await loadDogs();
-      if (selectedDog) {
-        await loadEvents(selectedDog.$id);
-      }
-    } catch (error) {
-      console.error('Error refreshing:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [selectedDog]);
+    const toiletEvents = todayEvents.filter(e => e.hasOwnProperty('location'));
+    const eatingEvents = todayEvents.filter(e => !e.hasOwnProperty('location'));
 
-  useEffect(() => {
-    loadDogs();
-  }, []);
+    const peeCount = toiletEvents.filter(e => e.type === 'wee').length;
+    const pooCount = toiletEvents.filter(e => e.type === 'poo').length;
+    const accident = toiletEvents.filter(e => 
+      e.type.toLowerCase() === 'inside' || 
+      e.type.toLowerCase() === 'outside' || 
+      (e.location && e.location.toLowerCase().includes('inside'))
+    ).length;
+    const mealCount = eatingEvents.filter(e => e.type === 'meal').length;
+    const snackCount = eatingEvents.filter(e => e.type === 'snack').length;
 
-  useEffect(() => {
-    if (selectedDog) {
-      loadEvents(selectedDog.$id);
-    }
-  }, [selectedDog]);
-
-  const loadDogs = async () => {
-    try {
-      const userDogs = await getUserDogs();
-      setDogs(userDogs);
-      if (userDogs.length > 0) {
-        setSelectedDog(userDogs[0]);
-      }
-    } catch (error) {
-      console.error('Failed to load dogs:', error);
-    }
-  };
-
-  const loadEvents = async (dogId) => {
-    try {
-      const dogEvents = await getDogToiletEvents(dogId);
-      setEvents(dogEvents);
-    } catch (error) {
-      console.error('Failed to load events:', error);
-    }
-  };
-
-  const handleAddTrip = async (dogId, type, location, timestamp) => {
-    try {
-      const newEvent = await addToiletEvent(dogId, type, location, timestamp);
-      setEvents(prevEvents => [newEvent, ...prevEvents].slice(0, 20));
-      onRefresh();
-    } catch (error) {
-      console.error('Failed to save event:', error);
-    }
-  };
-
-  const handleDogAdded = (newDog) => {
-    setDogs(prevDogs => [...prevDogs, newDog]);
-    setSelectedDog(newDog);
-  };
-
-const renderHeader = () => {
-  const today = new Date().toDateString();
-  const todayEvents = events.filter(e => new Date(e.timestamp).toDateString() === today);
-  const peeCount = todayEvents.filter(e => e.type === 'wee').length;
-  const pooCount = todayEvents.filter(e => e.type === 'poo').length;
-  const accident = todayEvents.filter(e => 
-    e.type.toLowerCase() === 'inside' || 
-    e.type.toLowerCase() === 'outside' || 
-    e.location.toLowerCase().includes('inside')
-  ).length;
-
-  
-  return (
-    <AuthenticatedLayout>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Welcome Back,</Text>
-          <Text style={styles.companyName}>{user.username}</Text>
-        </View>
-        <TouchableOpacity onPress={() => setIsAddDogModalVisible(true)} style={styles.addDogButton}>
-          <Text style={styles.addDogButtonText}>Add Dog</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.summaryCard}>
-        <View style={styles.summaryTitleContainer}>
-        <Text style={styles.summaryTitle}>
-          {selectedDog ? `${selectedDog.name}'s Summary Today` : "Today's Summary"}
-        </Text>
-        </View>
-        <View style={styles.summaryContent}>
-          <View style={styles.summaryItem}>
-            <Feather name="droplet" size={24} color={colors.primary} />
-            <Text style={styles.summaryText}>{peeCount} Pee</Text>
+    return (
+      <AuthenticatedLayout>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.welcomeText}>Welcome Back,</Text>
+            <Text style={styles.companyName}>{user.username}</Text>
           </View>
-          <View style={styles.summaryItem}>
-            <Feather name="target" size={24} color={colors.primary} />
-            <Text style={styles.summaryText}>{pooCount} Poo</Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Feather name="alert-circle" size={24} color={colors.primary} />
-            <Text style={styles.summaryText}>{accident} Accidents</Text>
-          </View>
-        </View>
-      </View>
-
-      <FlatList
-        horizontal
-        data={dogs}
-        keyExtractor={(item) => item.$id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => setSelectedDog(item)}
-            onLongPress={() => {
-              setSelectedDogForEdit(item);
-              setIsEditDogModalVisible(true);
-            }}
-            style={[
-              styles.dogItem,
-              selectedDog && selectedDog.$id === item.$id ? styles.selectedDogItem : null
-            ]}
-          >
-            <Text style={styles.dogName}>{item.name}</Text>
+          <TouchableOpacity onPress={() => setIsAddDogModalVisible(true)} style={styles.addDogButton}>
+            <Text style={styles.addDogButtonText}>Add Dog</Text>
           </TouchableOpacity>
-        )}
-        style={styles.dogList}
-      />
-      
-    </AuthenticatedLayout>
-  );
-};
+        </View>
+        
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryTitleContainer}>
+            <Text style={styles.summaryTitle}>
+              {selectedDog ? `${selectedDog.name}'s Summary Today` : "Today's Summary"}
+            </Text>
+          </View>
+          <View style={styles.summaryContent}>
+            <View style={styles.summaryItem}>
+              <Feather name="droplet" size={24} color={colors.primary} />
+              <Text style={styles.summaryText}>{peeCount} Pee</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Feather name="target" size={24} color={colors.primary} />
+              <Text style={styles.summaryText}>{pooCount} Poo</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Feather name="alert-circle" size={24} color={colors.primary} />
+              <Text style={styles.summaryText}>{accident} Accidents</Text>
+            </View>
+            {/* <View style={styles.summaryItem}>
+              <Feather name="" size={24} color={colors.primary} />
+              <Text style={styles.summaryText}>{mealCount} Meals</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Feather name="coffee" size={24} color={colors.primary} />
+              <Text style={styles.summaryText}>{snackCount} Snacks</Text>
+            </View> */}
+          </View>
+        </View>
+
+        <FlatList
+          horizontal
+          data={dogs}
+          keyExtractor={(item) => item.$id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => handleDogSelection(item)}
+              onLongPress={() => {
+                setSelectedDogForEdit(item);
+                setIsEditDogModalVisible(true);
+              }}
+              style={[
+                styles.dogItem,
+                selectedDog && selectedDog.$id === item.$id ? styles.selectedDogItem : null
+              ]}
+            >
+              <Text style={styles.dogName}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+          style={styles.dogList}
+        />
+      </AuthenticatedLayout>
+    );
+  };
 
   const renderEventGroup = ({ item }) => {
     const [date, dayEvents] = item;
@@ -369,39 +375,54 @@ const renderHeader = () => {
             style={styles.eventItem}
             onPress={() => {
               setSelectedTrip(event);
-              setIsEditTripModalVisible(true);
+              setIsEditTripModalVisible(event.hasOwnProperty('location'));
+              setIsAddEatingModalVisible(!event.hasOwnProperty('location'));
             }}
           >
-            <Text style={styles.eventText}>{`${event.type} - ${event.location}`}</Text>
+            <Text style={styles.eventText}>
+              {event.hasOwnProperty('location') 
+                ? `${event.type} - ${event.location}`
+                : `Eating - ${event.type}`}
+            </Text>
             <Text style={styles.eventTime}>
               {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Text>
             <Text style={styles.eventTime}>{user.username}</Text>
           </TouchableOpacity>
         ))}
-        
       </View>
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={groupEventsByDay(events)}
-        renderItem={renderEventGroup}
-        keyExtractor={(item) => item[0]}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={<Text style={styles.emptyText}>No toilet trips recorded yet.</Text>}
-        contentContainerStyle={styles.scrollContent}
-      />
+      {isLoading ? (
+        <ActivityIndicator size="large" color={colors.primary} />
+      ) : (
+        <FlatList
+          data={groupEventsByDay(events)}
+          renderItem={renderEventGroup}
+          keyExtractor={(item) => item[0]}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={<Text style={styles.emptyText}>No events recorded for this dog yet.</Text>}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.tint}
+            />
+          }
+        />
+      )}
 
       <View style={styles.predictionContainer}>
         <NextTripPrediction selectedDog={selectedDog} colors={colors.primary}/>
       </View>
 
-      <TouchableOpacity 
-        style={styles.addButton} 
-        onPress={() => setIsAddTripModalVisible(true)}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => setIsChoiceModalVisible(true)}
       >
         <Feather name="plus" size={30} color={colors.background} />
       </TouchableOpacity>
@@ -416,6 +437,14 @@ const renderHeader = () => {
         isVisible={isAddTripModalVisible}
         onClose={() => setIsAddTripModalVisible(false)}
         onAddTrip={handleAddTrip}
+        dogs={dogs}
+        colors={colors}
+      />
+
+      <AddEatingTrip
+        isVisible={isAddEatingModalVisible}
+        onClose={() => setIsAddEatingModalVisible(false)}
+        onAddEatingTrip={handleAddEatingTrip}
         dogs={dogs}
         colors={colors}
       />
@@ -445,6 +474,20 @@ const renderHeader = () => {
         onClose={() => setIsEditTripModalVisible(false)}
         onSave={handleEditTrip}
         trip={selectedTrip}
+        colors={colors}
+      />
+
+      <ChoiceModal
+        isVisible={isChoiceModalVisible}
+        onClose={() => setIsChoiceModalVisible(false)}
+        onChooseToilet={() => {
+          setIsChoiceModalVisible(false);
+          setIsAddTripModalVisible(true);
+        }}
+        onChooseEating={() => {
+          setIsChoiceModalVisible(false);
+          setIsAddEatingModalVisible(true);
+        }}
         colors={colors}
       />
 

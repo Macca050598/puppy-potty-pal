@@ -6,102 +6,50 @@ import { format } from 'date-fns';
 
 const EditAlertModal = ({ isVisible, onClose, onSave, alert }) => {
   const { colors } = useTheme();
-  const [title, setTitle] = useState('');
-  const [dateTime, setDateTime] = useState(new Date());
+  const [alertData, setAlertData] = useState({
+    title: '',
+    dateTime: new Date(),
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     if (alert) {
-      setTitle(alert.title);
-      setDateTime(new Date(alert.time));
+      setAlertData({
+        title: alert.title,
+        dateTime: new Date(alert.time),
+      });
     } else {
-      setTitle('');
-      setDateTime(new Date());
+      setAlertData({
+        title: '',
+        dateTime: new Date(),
+      });
     }
   }, [alert]);
 
   const handleSave = () => {
     onSave({
       id: alert ? alert.id : Date.now().toString(),
-      title,
-      time: dateTime.toISOString(),
+      title: alertData.title,
+      time: alertData.dateTime.toISOString(),
       isEnabled: true,
     });
     onClose();
   };
 
   const onDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || dateTime;
     setShowDatePicker(false);
-    setDateTime(currentDate);
+    if (selectedDate) {
+      setAlertData(prev => ({ ...prev, dateTime: selectedDate }));
+    }
   };
 
   const onTimeChange = (event, selectedTime) => {
-    const currentTime = selectedTime || dateTime;
     setShowTimePicker(false);
-    setDateTime(currentTime);
+    if (selectedTime) {
+      setAlertData(prev => ({ ...prev, dateTime: selectedTime }));
+    }
   };
-
-  return (
-    <Modal
-      visible={isVisible}
-      animationType="fade"
-      transparent={true}
-      onRequestClose={onClose}
-    >
-      <View style={styles.centeredView}>
-        <View style={[styles.modalView, { backgroundColor: colors.background }]}>
-          <Text style={[styles.modalTitle, { color: colors.text }]}>
-            {alert ? 'Edit Alert' : 'Add New Alert'}
-          </Text>
-          <TextInput
-            style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-            placeholder="Alert Title"
-            placeholderTextColor={colors.tint}
-            value={title}
-            onChangeText={setTitle}
-          />
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateTimeButton}>
-            <Text style={[styles.dateTimeButtonText, { color: colors.primary }]}>
-              {format(dateTime, 'MMMM d, yyyy')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.dateTimeButton}>
-            <Text style={[styles.dateTimeButtonText, { color: colors.primary }]}>
-              {format(dateTime, 'h:mm a')}
-            </Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={dateTime}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-            />
-          )}
-          {showTimePicker && (
-            <DateTimePicker
-              value={dateTime}
-              mode="time"
-              is24Hour={true}
-              display="default"
-              onChange={onTimeChange}
-            />
-          )}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={onClose} style={[styles.button, { backgroundColor: colors.text }]}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSave} style={[styles.button, { backgroundColor: colors.primary }]}>
-              <Text style={styles.buttonText}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-};
 
 const styles = StyleSheet.create({
   centeredView: {
@@ -173,5 +121,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+return (
+  <Modal
+    visible={isVisible}
+    animationType="fade"
+    transparent={true}
+    onRequestClose={onClose}
+  >
+    <View style={styles.centeredView}>
+      <View style={[styles.modalView, { backgroundColor: colors.background }]}>
+        <Text style={[styles.modalTitle, { color: colors.text }]}>
+          {alert ? 'Edit Alert' : 'Add New Alert'}
+        </Text>
+        <TextInput
+          style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+          placeholder="Alert Title"
+          placeholderTextColor={colors.tint}
+          value={alertData.title}
+          onChangeText={(text) => setAlertData(prev => ({ ...prev, title: text }))}
+        />
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateTimeButton}>
+          <Text style={[styles.dateTimeButtonText, { color: colors.primary }]}>
+            {format(alertData.dateTime, 'MMMM d, yyyy')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.dateTimeButton}>
+          <Text style={[styles.dateTimeButtonText, { color: colors.primary }]}>
+            {format(alertData.dateTime, 'h:mm a')}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={alertData.dateTime}
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+          />
+        )}
+        {showTimePicker && (
+          <DateTimePicker
+            value={alertData.dateTime}
+            mode="time"
+            is24Hour={true}
+            display="default"
+            onChange={onTimeChange}
+          />
+        )}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity onPress={onClose} style={[styles.button, { backgroundColor: colors.text }]}>
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSave} style={[styles.button, { backgroundColor: colors.primary }]}>
+            <Text style={styles.buttonText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  </Modal>
+);
+};
 
 export default EditAlertModal;

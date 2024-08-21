@@ -3,7 +3,7 @@ import { View, FlatList, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import EmptyState from '../../components/EmptyState';
-import { getUserPosts, signOut } from '../../lib/appwrite';
+import { getPosts, signOut } from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
 import VideoCard from '../../components/VideoCard';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -16,7 +16,7 @@ import { useTheme } from '../../config/theme';
 const Profile = () => {
   const { user } = useGlobalContext();
   const { colors } = useTheme();
-  const { data: posts, refetch } = useAppwrite(() => getUserPosts(user.$id));
+  const { data: posts, refetch } = useAppwrite(() => getPosts(user.$id));
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {

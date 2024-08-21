@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Modal, TouchableOpacity, Image, Animated, StyleSheet, Dimensions } from 'react-native';
-import { getUserDogs, getDogToiletEvents, addToiletEvent } from '../lib/appwrite'; // Adjust path as needed
+import { getCurrentUserDogs, getDogEvents, addToiletEvent } from '../lib/appwrite'; // Adjust path as needed
 import { images } from '../constants';
 const { width, height } = Dimensions.get('window');
 

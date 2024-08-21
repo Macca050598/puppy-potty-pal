@@ -9,18 +9,31 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const scheduleNotification = async (alert) => {
-  const trigger = new Date(alert.time);
-  trigger.setDate(trigger.getDate() + 1); // Schedule for tomorrow
+export const scheduleNotification = async (dogId, dogName, predictedTime) => {
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') {
+      console.log('Notification permission not granted');
+      return;
+    }
 
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: 'Pet Alert',
-      body: alert.title,
-    },
-    trigger,
-    identifier: alert.id,
-  });
+    await Notifications.cancelScheduledNotificationAsync(`dog-${dogId}`);
+
+    const notificationTrigger = convertToNotificationTrigger(new Date(predictedTime));
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Time for a Toilet Trip",
+        body: `${dogName} might need to go out soon!`,
+      },
+      trigger: notificationTrigger,
+      identifier: `dog-${dogId}`,
+    });
+
+    console.log(`Notification scheduled for ${dogName} at ${predictedTime}`);
+  } catch (error) {
+    console.error('Error scheduling notification:', error);
+  }
 };
 
 export const cancelNotification = async (alertId) => {

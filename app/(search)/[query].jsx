@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import SearchInput from '../../components/SearchInput';
 import EmptyState from '../../components/EmptyState';
-import { searchPosts } from '../../lib/appwrite';
+import { getPosts } from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
 import VideoCard from '../../components/VideoCard';
 import { useTheme } from '../../config/theme'; // Import useTheme hook
@@ -14,8 +14,7 @@ const Search = () => {
   const router = useRouter();
   const { colors } = useTheme(); // Use the useTheme hook to get colors
   const { query } = useLocalSearchParams();
-  const { data: posts, refetch } = useAppwrite(() => searchPosts(query));
-
+  const { data: posts, refetch } = useAppwrite(() => getPosts({ searchQuery: query }));
   useEffect(() => {
     refetch();
   }, [query]);

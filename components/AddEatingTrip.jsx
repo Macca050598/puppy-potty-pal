@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { getCurrentUserDogs } from '../lib/appwrite';
+import { getCurrentUserDogs } from '../lib/appwrite.js';
 import CustomDropdown from './CustomDropdown.jsx';
-import { predictNextPooTrip, predictNextWeeTrip } from '../utils/tripPrediction.jsx';
 
-const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
-  const [tripData, setTripData] = useState({
-    selectedDog: null,
-    type: '',
-    location: '',
-    timestamp: new Date(),
-  });
+const AddEatingTrip = ({ isVisible, onClose, onAddEatingTrip, colors }) => {
+  const [selectedDog, setSelectedDog] = useState(null);
+  const [type, setType] = useState('');
+  const [timestamp, setTimestamp] = useState(new Date());
   const [associatedDogs, setAssociatedDogs] = useState([]);
   const [showTimePicker, setShowTimePicker] = useState(false);
   
   useEffect(() => {
     if (isVisible) {
       refreshDogList();
-      setTripData(prev => ({ ...prev, timestamp: new Date(), type: '', location: '' }));
+      setTimestamp(new Date());
+      setType('');
     }
   }, [isVisible]);
 
@@ -27,7 +24,7 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
       const userDogs = await getCurrentUserDogs();
       setAssociatedDogs(userDogs);
       if (userDogs.length > 0) {
-        setTripData(prev => ({ ...prev, selectedDog: userDogs[0] }));
+        setSelectedDog(userDogs[0]);
       }
     } catch (error) {
       console.error('Failed to load dogs:', error);
@@ -35,15 +32,13 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
   };
 
   const handleSubmit = async () => {
-    if (tripData.selectedDog) {
+    if (selectedDog) {
       try {
-        await onAddTrip(tripData.selectedDog.$id, tripData.type, tripData.location, tripData.timestamp);
-        await predictNextWeeTrip(tripData.selectedDog.$id);
-        await predictNextPooTrip(tripData.selectedDog.$id);
+        await onAddEatingTrip(selectedDog.$id, type, timestamp);
         onClose();
       } catch (error) {
-        console.error('Failed to add trip or predict next trip:', error);
-        alert('Failed to add trip. Please try again.');
+        console.error('Failed to add eating event:', error);
+        alert('Failed to add eating event. Please try again.');
       }
     } else {
       alert('Please select a dog');
@@ -53,19 +48,15 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
   const onChangeTime = (event, selectedDate) => {
     setShowTimePicker(false);
     if (selectedDate) {
-      setTripData(prev => ({ ...prev, timestamp: selectedDate }));
+      setTimestamp(selectedDate);
     }
   };
 
   const typeOptions = [
-    { label: 'Wee', value: 'wee' },
-    { label: 'Poo', value: 'poo' },
+    { label: 'Snack', value: 'snack' },
+    { label: 'Meal', value: 'meal' },
   ];
 
-  const locationOptions = [
-    { label: 'Outside', value: 'outside' },
-    { label: 'Inside (Accident)', value: 'inside' },
-  ];
 
   const styles = StyleSheet.create({
     modalOverlay: {
@@ -129,20 +120,19 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
       color: colors.accent,
     },
   });
-
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.title}>Add Toilet Trip</Text>
+          <Text style={styles.title}>Add Eating Event</Text>
           
           {associatedDogs.length > 0 ? (
             <CustomDropdown
               options={associatedDogs.map(dog => ({ label: dog.name, value: dog.$id }))}
-              selectedValue={tripData.selectedDog ? tripData.selectedDog.$id : ''}
+              selectedValue={selectedDog ? selectedDog.$id : ''}
               onSelect={(value) => {
                 const selected = associatedDogs.find(dog => dog.$id === value);
-                setTripData(prev => ({ ...prev, selectedDog: selected }));
+                setSelectedDog(selected);
               }}
               label="Select Dog"
               colors={colors}
@@ -153,31 +143,22 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
 
           <CustomDropdown
             options={typeOptions}
-            selectedValue={tripData.type}
-            onSelect={(value) => setTripData(prev => ({ ...prev, type: value }))}
-            label="Type of toilet"
+            selectedValue={type}
+            onSelect={setType}
+            label="Type of Eating"
             colors={colors}
           />
-
-          <CustomDropdown
-            options={locationOptions}
-            selectedValue={tripData.location}
-            onSelect={(value) => setTripData(prev => ({ ...prev, location: value }))}
-            label="Location"
-            colors={colors}
-          />
-
           <Text style={{ marginBottom: 5, color: colors.text }}>Time:</Text>
           <TouchableOpacity 
             style={styles.timePickerButton}
             onPress={() => setShowTimePicker(true)}
           >
-            <Text style={styles.timePickerText}>{tripData.timestamp.toLocaleTimeString()}</Text>
+            <Text style={styles.timePickerText}>{timestamp.toLocaleTimeString()}</Text>
           </TouchableOpacity>
 
           {showTimePicker && (
             <DateTimePicker
-              value={tripData.timestamp}
+              value={timestamp}
               mode="time"
               is24Hour={true}
               display="default"
@@ -197,7 +178,7 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
               style={[styles.button, styles.addButton]}
               onPress={handleSubmit}
             >
-              <Text style={[styles.buttonText, styles.addButtonText]}>Add Trip</Text>
+              <Text style={[styles.buttonText, styles.addButtonText]}>Add Event</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -206,4 +187,4 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
   );
 };
 
-export default AddToiletTrip;
+export default AddEatingTrip;

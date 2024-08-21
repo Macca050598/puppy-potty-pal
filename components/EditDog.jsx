@@ -1,28 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { updateDog, deleteDog, getDog } from '../lib/appwrite';
+import { manageDog } from '../lib/appwrite';
+import { getAllBreeds, searchBreeds } from '../utils/DogBreedApi';
+import { debounce } from 'lodash'; // Make sure to install lodash if not already in your project
 
 const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors, isOwnedByUser }) => {
-  const [dogName, setDogName] = useState('');
-  const [dogBreed, setDogBreed] = useState('');
-  const [dogDOB, setDogDOB] = useState(new Date());
+  const [dogData, setDogData] = useState({
+    name: '',
+    breed: '',
+    weight: '',
+    dob: new Date(),
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [breeds, setBreeds] = useState([]);
+  const [showBreedList, setShowBreedList] = useState(false);
 
   useEffect(() => {
     if (isVisible && dogId) {
       fetchDogData();
+      loadBreeds();
     }
   }, [isVisible, dogId]);
 
   const fetchDogData = async () => {
     setIsLoading(true);
     try {
-      const dogData = await getDog(dogId);
-      setDogName(dogData.name || '');
-      setDogBreed(dogData.breed || '');
-      setDogDOB(dogData.birthdate ? new Date(dogData.birthdate) : new Date());
+      const dogData = await manageDog('get', dogId);
+      setDogData({
+        name: dogData.name || '',
+        breed: dogData.breed || '',
+        weight: dogData.weight ? dogData.weight.toString() : '',
+        dob: dogData.birthdate ? new Date(dogData.birthdate) : new Date(),
+      });
     } catch (error) {
       console.error('Failed to fetch dog data:', error);
       Alert.alert('Error', 'Failed to load dog information. Please try again.');
@@ -31,10 +42,51 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
     }
   };
 
+  const loadBreeds = async () => {
+    try {
+      const allBreeds = await getAllBreeds();
+      setBreeds(allBreeds);
+    } catch (error) {
+      console.error('Failed to load breeds:', error);
+    }
+  };
+
+  const debouncedSearchBreeds = useCallback(
+    debounce(async (query) => {
+      if (query.length > 2) {
+        try {
+          const searchResults = await searchBreeds(query);
+          setBreeds(searchResults);
+        } catch (error) {
+          console.error('Failed to search breeds:', error);
+        }
+      } else if (query.length === 0) {
+        loadBreeds();
+      }
+    }, 300),
+    []
+  );
+
+  const handleBreedSearch = (query) => {
+    setDogData(prev => ({ ...prev, breed: query }));
+    debouncedSearchBreeds(query);
+    setShowBreedList(true);
+  };
+
+  const selectBreed = (breed) => {
+    setDogData(prev => ({ ...prev, breed: breed.name }));
+    setShowBreedList(false);
+  };
+
   const handleUpdateDog = async () => {
     if (!isOwnedByUser) return;
     try {
-      const updatedDog = await updateDog(dogId, dogName, dogBreed, dogDOB.toISOString());
+      const updatedDog = await manageDog('update', dogId, {
+        name: dogData.name,
+        breed: dogData.breed,
+        birthdate: dogData.dob.toISOString(),
+        weight: parseInt(dogData.weight) || 0
+      });
       onDogUpdated(updatedDog);
       onClose();
     } catch (error) {
@@ -55,7 +107,7 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
           style: "destructive",
           onPress: async () => {
             try {
-              await deleteDog(dogId);
+              await manageDog('delete', dogId);
               onDogDeleted(dogId);
               onClose();
             } catch (error) {
@@ -71,9 +123,10 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
   const onChangeDOB = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate && isOwnedByUser) {
-      setDogDOB(selectedDate);
+      setDogData(prev => ({ ...prev, dob: selectedDate }));
     }
   };
+
 
   const styles = StyleSheet.create({
     modalOverlay: {
@@ -142,7 +195,8 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
     },
     actionButtonText: {
       color: colors.accent,
-    },disabledInput: {
+    },
+    disabledInput: {
       opacity: 0.5,
     },
     ownershipNote: {
@@ -151,9 +205,29 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
       marginBottom: 10,
       textAlign: 'center',
     },
+    breedList: {
+      maxHeight: 150,
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      marginBottom: 15,
+    },
+    breedItem: {
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.tint,
+      color: colors.text,
+    },
+    weightInput: {
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 15,
+      color: colors.text,
+    },
   });
-
-  if (isLoading) {
+if (isLoading) {
     return (
       <Modal visible={isVisible} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
@@ -176,16 +250,39 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
           <TextInput
             style={[styles.input, !isOwnedByUser && styles.disabledInput]}
             placeholder="Dog Name"
-            value={dogName}
-            onChangeText={setDogName}
+            value={dogData.name}
+            onChangeText={(text) => setDogData(prev => ({ ...prev, name: text }))}
             editable={isOwnedByUser}
           />
 
           <TextInput
             style={[styles.input, !isOwnedByUser && styles.disabledInput]}
-            placeholder="Dog Breed"
-            value={dogBreed}
-            onChangeText={setDogBreed}
+            placeholder="Search Dog Breed"
+            value={dogData.breed}
+            onChangeText={handleBreedSearch}
+            onFocus={() => isOwnedByUser && setShowBreedList(true)}
+            editable={isOwnedByUser}
+          />
+
+          {showBreedList && isOwnedByUser && (
+            <FlatList
+              data={breeds}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => selectBreed(item)}>
+                  <Text style={styles.breedItem}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+              style={styles.breedList}
+            />
+          )}
+
+          <TextInput
+            style={[styles.weightInput, !isOwnedByUser && styles.disabledInput]}
+            placeholder="Dog Weight (kg)"
+            value={dogData.weight}
+            onChangeText={(text) => setDogData(prev => ({ ...prev, weight: text }))}
+            keyboardType="numeric"
             editable={isOwnedByUser}
           />
 
@@ -194,12 +291,12 @@ const EditDog = ({ isVisible, onClose, onDogUpdated, onDogDeleted, dogId, colors
             style={[styles.datePickerButton, !isOwnedByUser && styles.disabledInput]}
             onPress={() => isOwnedByUser && setShowDatePicker(true)}
           >
-            <Text style={styles.datePickerText}>{dogDOB.toLocaleDateString()}</Text>
+            <Text style={styles.datePickerText}>{dogData.dob.toLocaleDateString()}</Text>
           </TouchableOpacity>
 
           {showDatePicker && isOwnedByUser && (
             <DateTimePicker
-              value={dogDOB}
+              value={dogData.dob}
               mode="date"
               display="default"
               onChange={onChangeDOB}

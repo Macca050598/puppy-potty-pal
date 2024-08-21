@@ -6,7 +6,7 @@ import SearchInput from '../../components/SearchInput';
 import { icons, images } from '../../constants';
 import Trending from '../../components/Trending';
 import EmptyState from '../../components/EmptyState';
-import { getAllPosts, getLatestPosts } from '../../lib/appwrite';
+import { getPosts } from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
 import VideoCard from '../../components/VideoCard';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -17,8 +17,8 @@ import { useTheme } from '../../config/theme';
 const Social = () => {
   const { user } = useGlobalContext();
   const { colors } = useTheme();
-  const { data: posts, refetch } = useAppwrite(getAllPosts);
-  const { data: latestPosts } = useAppwrite(getLatestPosts);
+  const { data: posts, refetch } = useAppwrite(getPosts);
+  const { data: latestPosts } = useAppwrite(getPosts);
   const [isMediaVisible, setIsMediaVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 

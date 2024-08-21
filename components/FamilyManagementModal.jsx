@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList, Modal } from 'react-native';
 import { useTheme } from '../config/theme';
-import { updateFamily, removeUserFromFamily, deleteFamily, leaveFamily, getUserDogs, getFamilyDogs, updateFamilyDogs, getAllUsers, updateFamilyMembers } from '../lib/appwrite';
+import { updateFamily, leaveFamily, deleteFamily, getFamilyDogs, updateFamilyDogs, getAllUsers, updateFamilyMembers } from '../lib/appwrite';
 import AuthenticatedLayout from './AuthenticatedLayout';
 import { StatusBar } from 'expo-status-bar';
+
 const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUserId }) => {
   const { colors } = useTheme();
   const [editedFamilyName, setEditedFamilyName] = useState(family?.name || '');
@@ -19,7 +20,6 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
       setEditedFamilyName(family.name);
       fetchFamilyDogs();
       fetchAllUsers();
-      initializeSelectedMembers();
     }
   }, [family]);
 
@@ -41,17 +41,14 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
     try {
       const users = await getAllUsers();
       setAllUsers(users);
+      const membersObj = {};
+      family.members.forEach(memberId => {
+        membersObj[memberId] = true;
+      });
+      setSelectedMembers(membersObj);
     } catch (error) {
       console.error("Error fetching all users:", error);
     }
-  };
-
-  const initializeSelectedMembers = () => {
-    const membersObj = {};
-    family.members.forEach(memberId => {
-      membersObj[memberId] = true;
-    });
-    setSelectedMembers(membersObj);
   };
 
   const handleUpdateFamily = async () => {
@@ -282,7 +279,7 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
             />
             <Text style={styles.sectionTitle}>Family Members</Text>
             <FlatList
-              data={allUsers.filter(user => family.members.includes(user.$id))}
+              data={allUsers.filter(user => selectedMembers[user.$id])}
               renderItem={renderMemberItem}
               keyExtractor={(item) => item.$id}
             />
@@ -310,6 +307,5 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
     </Modal>
   );
 };
-
 
 export default FamilyManagementModal;

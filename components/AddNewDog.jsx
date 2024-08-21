@@ -1,28 +1,78 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { addDog, getCurrentUser } from '../lib/appwrite'; // Adjust the import path as needed
+import { addDog, getCurrentUser } from '../lib/appwrite';
+import { getAllBreeds, searchBreeds } from '../utils/DogBreedApi';
+import { debounce } from 'lodash'; // Make sure to install lodash if not already in your project
 
 const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
-  const [newDogName, setNewDogName] = useState('');
-  const [newDogBreed, setNewDogBreed] = useState('');
-  const [newDogDOB, setNewDogDOB] = useState(new Date());
+  const [dogData, setDogData] = useState({
+    name: '',
+    breed: '',
+    weight: '',
+    dob: new Date()
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dobError, setDobError] = useState('');
+  const [breeds, setBreeds] = useState([]);
+  const [showBreedList, setShowBreedList] = useState(false);
+
+  useEffect(() => {
+    if (isVisible) {
+      loadBreeds();
+    }
+  }, [isVisible]);
+
+  const loadBreeds = async () => {
+    try {
+      const allBreeds = await getAllBreeds();
+      setBreeds(allBreeds);
+    } catch (error) {
+      console.error('Failed to load breeds:', error);
+      Alert.alert('Error', 'Failed to load dog breeds. Please try again.');
+    }
+  };
+
+  const debouncedSearchBreeds = useCallback(
+    debounce(async (query) => {
+      if (query.length > 2) {
+        try {
+          const searchResults = await searchBreeds(query);
+          setBreeds(searchResults);
+        } catch (error) {
+          console.error('Failed to search breeds:', error);
+        }
+      } else if (query.length === 0) {
+        loadBreeds();
+      }
+    }, 300),
+    []
+  );
+
+  const handleBreedSearch = (query) => {
+    setDogData(prev => ({ ...prev, breed: query }));
+    debouncedSearchBreeds(query);
+    setShowBreedList(true);
+  };
+
+  const selectBreed = (breed) => {
+    setDogData(prev => ({ ...prev, breed: breed.name }));
+    setShowBreedList(false);
+  };
 
   const handleAddDog = async () => {
     try {
-      const formattedDate = newDogDOB.toISOString();
       const currentUser = await getCurrentUser();
       if (currentUser && currentUser.$id) {
-        const userId = currentUser.$id;
-        const newDog = await addDog(userId, newDogName, newDogBreed, formattedDate);
+        const newDog = await addDog(
+          currentUser.$id,
+          dogData.name,
+          dogData.breed,
+          dogData.dob.toISOString(),
+          parseInt(dogData.weight) || 0
+        );
         onDogAdded(newDog);
+        resetForm();
         onClose();
-        setNewDogName('');
-        setNewDogBreed('');
-        setNewDogDOB(new Date());
-        setDobError('');
       } else {
         throw new Error('No current user found');
       }
@@ -32,10 +82,19 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
     }
   };
 
+  const resetForm = () => {
+    setDogData({
+      name: '',
+      breed: '',
+      weight: '',
+      dob: new Date()
+    });
+  };
+
   const onChangeDOB = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      setNewDogDOB(selectedDate);
+      setDogData(prev => ({ ...prev, dob: selectedDate }));
     }
   };
 
@@ -108,6 +167,19 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
     addButtonText: {
       color: colors.accent,
     },
+    breedList: {
+      maxHeight: 150,
+      borderWidth: 1,
+      borderColor: colors.tint,
+      borderRadius: 5,
+      marginBottom: 15,
+    },
+    breedItem: {
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.tint,
+      color: colors.text,
+    },
   });
 
   return (
@@ -119,15 +191,37 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
           <TextInput
             style={styles.input}
             placeholder="Dog Name"
-            value={newDogName}
-            onChangeText={setNewDogName}
+            value={dogData.name}
+            onChangeText={(text) => setDogData(prev => ({ ...prev, name: text }))}
           />
 
           <TextInput
             style={styles.input}
-            placeholder="Dog Breed"
-            value={newDogBreed}
-            onChangeText={setNewDogBreed}
+            placeholder="Search Dog Breed"
+            value={dogData.breed}
+            onChangeText={handleBreedSearch}
+            onFocus={() => setShowBreedList(true)}
+          />
+
+          {showBreedList && (
+            <FlatList
+              data={breeds}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => selectBreed(item)}>
+                  <Text style={styles.breedItem}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+              style={styles.breedList}
+            />
+          )}
+
+          <TextInput
+            style={styles.input}
+            placeholder="Dog Weight (kg)"
+            value={dogData.weight}
+            onChangeText={(text) => setDogData(prev => ({ ...prev, weight: text }))}
+            keyboardType="numeric"
           />
 
           <Text style={[styles.datePickerText, { marginBottom: 5 }]}>Date of Birth:</Text>
@@ -135,22 +229,18 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
             style={styles.datePickerButton}
             onPress={() => setShowDatePicker(true)}
           >
-            <Text style={styles.datePickerText}>{newDogDOB.toLocaleDateString()}</Text>
+            <Text style={styles.datePickerText}>{dogData.dob.toLocaleDateString()}</Text>
           </TouchableOpacity>
 
           {showDatePicker && (
             <DateTimePicker
-              value={newDogDOB}
+              value={dogData.dob}
               mode="date"
               display="default"
               onChange={onChangeDOB}
               textColor={colors.text}
             />
           )}
-
-          {dobError ? (
-            <Text style={styles.errorText}>{dobError}</Text>
-          ) : null}
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
