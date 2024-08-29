@@ -77,8 +77,9 @@ const SignIn = () => {
       return;
     }
     setIsSubmitting(true);
-
+    
     try {
+      
       const result = await signIn(form.email, form.password);
       setUser(result);
       setIsLoggedIn(result);

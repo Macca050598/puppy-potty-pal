@@ -13,6 +13,7 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import AddNewMedia from '../../components/AddNewMedia';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { useTheme } from '../../config/theme';
+import ImageCard from '../../components/ImageCard';
 
 const Social = () => {
   const { user } = useGlobalContext();
@@ -27,6 +28,10 @@ const Social = () => {
     await refetch();
     setRefreshing(false);
   };
+  const handleUploadSuccess = () => {
+    onRefresh();
+  };
+
 
   const styles = StyleSheet.create({
     container: {
@@ -76,20 +81,19 @@ const Social = () => {
   return (
     <AuthenticatedLayout>
       <SafeAreaView style={styles.container}>
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.$id}
-          renderItem={({ item }) => (
-            <VideoCard
-            $id={item.$id} // Ensure this is correct
-              title={item.title}
-              thumbnail={item.thumbnail}
-              video={item.video}
-              creator={item.creator.username}
-              avatar={item.creator.avatar}
-              colors={colors}
-              likes={item.likes}
-            />
+      <FlatList
+  data={posts}
+  keyExtractor={(item) => item.$id}
+  renderItem={({ item }) => (
+    <ImageCard
+      $id={item.$id}
+      title={item.title}
+      imageUrl={item.image}
+      creator={item.creator.username}
+      avatar={item.creator.avatar}
+      colors={colors}
+      likes={item.likes}
+    />
           )}
           ListHeaderComponent={() => (
             <View style={styles.header}>
@@ -123,7 +127,7 @@ const Social = () => {
           )}
           ListEmptyComponent={() => (
             <EmptyState
-              title="No Videos Found"
+              title="No Images Found"
               subtitle="Be the first to upload!"
               titleStyle={{ color: colors.text }}
               subtitleStyle={{ color: colors.tint }}
@@ -147,6 +151,7 @@ const Social = () => {
           <AddNewMedia
             isVisible={isMediaVisible}
             onClose={() => setIsMediaVisible(false)}
+            onUploadSuccess={handleUploadSuccess}
             colors={colors}
           />
         </Modal>

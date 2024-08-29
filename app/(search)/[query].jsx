@@ -1,90 +1,104 @@
-import React, { useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
-import SearchInput from '../../components/SearchInput';
-import EmptyState from '../../components/EmptyState';
-import { getPosts } from '../../lib/appwrite';
-import useAppwrite from '../../lib/useAppwrite';
-import VideoCard from '../../components/VideoCard';
-import { useTheme } from '../../config/theme'; // Import useTheme hook
-import { useRouter } from 'expo-router';
+import { useState, useEffect } from 'react'
+import { View, Text, StyleSheet, FlatList } from 'react-native'
+import { useLocalSearchParams, Stack } from 'expo-router'
+import SearchInput from '../../components/SearchInput'
+import ImageCard from '../../components/ImageCard' // Assuming you've created this component
+import useAppwrite from '../../lib/useAppwrite'
+import { getPosts } from '../../lib/appwrite'
+import EmptyState from '../../components/EmptyState'
+import { useTheme } from '../../config/theme'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
-const Search = () => {
-  const router = useRouter();
-  const { colors } = useTheme(); // Use the useTheme hook to get colors
-  const { query } = useLocalSearchParams();
-  const { data: posts, refetch } = useAppwrite(() => getPosts({ searchQuery: query }));
-  useEffect(() => {
-    refetch();
-  }, [query]);
+const SearchPage = () => {
+  const { colors } = useTheme()
+  const { query } = useLocalSearchParams()
+  const [searchQuery, setSearchQuery] = useState(query)
+  const { data: searchResults, isLoading } = useAppwrite(() => getPosts({ searchQuery }))
 
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.background,
       flex: 1,
+      backgroundColor: colors.background,
     },
     header: {
-      marginVertical: 24,
-      paddingHorizontal: 16,
-    },
-    subtitle: {
-      fontWeight: '500',
-      color: colors.tint,
-      fontSize: 14,
+      paddingHorizontal: 24,
+      paddingTop: 30,
+      paddingBottom: 24,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
     },
     title: {
       fontSize: 24,
-      fontWeight: '600',
+      fontWeight: 'bold',
       color: colors.text,
-      marginTop: 4,
+      marginBottom: 8,
     },
-    searchInputContainer: {
-      marginTop: 24,
-      marginBottom: 32,
+    subtitle: {
+      fontSize: 14,
+      color: colors.text,
+      opacity: 0.7,
     },
-  });
+    searchContainer: {
+      paddingHorizontal: 24,
+      paddingVertical: 16,
+    },
+    resultCount: {
+      fontSize: 14,
+      color: colors.text,
+      opacity: 0.7,
+      marginHorizontal: 24,
+      marginBottom: 16,
+    },
+  })
 
   return (
     <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <View style={styles.header}>
+        <Text style={styles.title}>Search Results</Text>
+        <Text style={styles.subtitle}>{`Showing results for "${searchQuery}"`}</Text>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <SearchInput
+          initialQuery={searchQuery}
+          colors={colors}
+          onSearch={(newQuery) => setSearchQuery(newQuery)}
+        />
+      </View>
+
+      {!isLoading && (
+        <Text style={styles.resultCount}>
+          {searchResults.length} {searchResults.length === 1 ? 'result' : 'results'} found
+        </Text>
+      )}
+
       <FlatList
-        data={posts}
+        data={searchResults}
         keyExtractor={(item) => item.$id}
         renderItem={({ item }) => (
-          <VideoCard
+          <ImageCard
+            $id={item.$id}
             title={item.title}
-            thumbnail={item.thumbnail}
-            video={item.video}
+            imageUrl={item.image}
             creator={item.creator.username}
             avatar={item.creator.avatar}
             colors={colors}
+            likes={item.likes}
           />
         )}
-        ListHeaderComponent={() => (
-          <View style={styles.header}>
-            <Text style={styles.subtitle}>
-              Search Results
-            </Text>
-            <Text style={styles.title}>
-              {query}
-            </Text>
-
-            <View style={styles.searchInputContainer}>
-              <SearchInput initialQuery={query} refetch={refetch} colors={colors} />
-            </View>
-          </View>
-        )}
-        ListEmptyComponent={() => (
-          <EmptyState
-            title="No Videos Found"
-            subtitle="No videos found for this search query"
-            titleStyle={{ color: colors.text }}
-            subtitleStyle={{ color: colors.tint }}
-          />
-        )}
+        ListEmptyComponent={
+          !isLoading && (
+            <EmptyState
+              title="No Results Found"
+              subtitle={`We couldn't find any results for "${searchQuery}"`}
+            />
+          )
+        }
       />
     </SafeAreaView>
-  );
-};
+  )
+}
 
-export default Search;
+export default SearchPage

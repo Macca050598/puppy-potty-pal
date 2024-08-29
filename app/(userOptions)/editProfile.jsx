@@ -5,7 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../config/theme';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { updateUser, updateUserAvatar } from '../../lib/appwrite'; // You'll need to implement these functions
+import { updateUserName, updateUserEmail, updateUserAvatar } from '../../lib/appwrite';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 
 const EditProfile = () => {
@@ -13,9 +13,17 @@ const EditProfile = () => {
   const { user, setUser } = useGlobalContext();
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [avatar, setAvatar] = useState(user?.avatar || null);
+  const [password, setPassword] = useState('');
+  const [isFormChanged, setIsFormChanged] = useState(false);
+
+  useEffect(() => {
+    const hasChanges = 
+      username !== user.username ||
+      email !== user.email ||
+      avatar !== user.avatar;
+    setIsFormChanged(hasChanges);
+  }, [username, email, avatar, user]);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -25,24 +33,39 @@ const EditProfile = () => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      setAvatar(result.uri);
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
     }
   };
 
   const handleSave = async () => {
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+    if (!password) {
+      Alert.alert('Error', 'Please enter your password to save changes.');
       return;
     }
-
+  
     try {
-      const updatedUser = await updateUser(user.$id, username, email, password);
-      if (avatar !== user.avatar) {
-        await updateUserAvatar(user.$id, avatar);
+      let updatedUser = { ...user };
+  
+      // Only update username if it has changed
+      if (username !== user.username) {
+        updatedUser = await updateUserName(username);
       }
+  
+      // Only update email if it has changed
+      if (email !== user.email) {
+        updatedUser = await updateUserEmail(email, password);
+      }
+  
+      // Only update avatar if it has changed
+      if (avatar !== user.avatar) {
+        const avatarUrl = await updateUserAvatar(user.$id, avatar);
+        updatedUser.avatar = avatarUrl;
+      }
+  
       setUser(updatedUser);
       Alert.alert('Success', 'Profile updated successfully');
+      setPassword('');
     } catch (error) {
       console.error('Error updating profile:', error);
       Alert.alert('Error', 'Failed to update profile. Please try again.');
@@ -85,30 +108,24 @@ const EditProfile = () => {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>New Password</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Password (required to save changes)</Text>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border }]}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               placeholderTextColor={colors.text}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Confirm New Password</Text>
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              placeholderTextColor={colors.text}
+              placeholder="Enter your password"
             />
           </View>
 
           <TouchableOpacity
-            style={[styles.saveButton, { backgroundColor: colors.primary }]}
+            style={[
+              styles.saveButton, 
+              { backgroundColor: (isFormChanged && password) ? colors.primary : colors.secondary }
+            ]}
             onPress={handleSave}
+            disabled={!isFormChanged || !password}
           >
             <Text style={[styles.saveButtonText, { color: colors.background }]}>Save Changes</Text>
           </TouchableOpacity>
@@ -156,6 +173,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
+    marginTop: 20,
   },
   saveButtonText: {
     fontSize: 16,

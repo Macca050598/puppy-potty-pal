@@ -6,7 +6,7 @@ import { images } from '../../constants';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
-import { createUser } from '../../lib/appwrite';
+import { createUser, signUpWithGoogle } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { StatusBar } from 'expo-status-bar';
 const SignUp = () => {
@@ -15,6 +15,17 @@ const SignUp = () => {
     email: '',
     password: ''
   }); 
+
+  const handleGoogleSignUp = async () => {
+    try {
+      const user = await signUpWithGoogle();
+      await login(user);
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Google Sign-Up failed:', error);
+      // Handle error (show error message to user)
+    }
+  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setUser, setIsLoggedIn } = useGlobalContext();
@@ -126,6 +137,14 @@ const SignUp = () => {
           containerStyles={styles.buttonContainer}
           isLoading={isSubmitting}
         />
+
+      <CustomButton
+        title="Sign Up with Google"
+        handlePress={handleGoogleSignUp}
+        containerStyles={[styles.button, styles.googleButton]}
+        textStyles={styles.googleButtonText}
+        colors={colors}
+      />
 
         <View style={styles.linkContainer}>
           <Text style={styles.linkText}>

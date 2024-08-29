@@ -1,25 +1,70 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import CustomButton from './CustomButton.jsx';
 import FormField from '../components/FormField.jsx';
 import icons from '../constants/icons.js';
+import { router } from 'expo-router';
+import { createImage } from '../lib/appwrite.js';
+import {useGlobalContext} from '../context/GlobalProvider.js';
+import * as ImagePicker from 'expo-image-picker';
 
-const AddNewMedia = ({ isVisible, onClose, colors }) => {
+const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
+  const {user} = useGlobalContext();
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: '',
-    video: null,
-    thumbnail: null,
-    prompt: ''
+    image: null
   });
 
   const openPicker = async (selectType) => {
-    // Implement picker logic  
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if(!result.canceled) {
+      if(selectType === 'image') {
+        setForm({ ...form, image: result.assets[0] })
+      }
+    }
   }
 
-  const submit = () => {
-    // Implement submission logic
+  const submit = async () => {
+    if(!form.title || !form.image || !form.prompt ) {
+      return Alert.alert("Please fill in all the fields..")
+    }
+
+    setUploading(true)
+
+    try {
+
+      await createImage({...form, userId: user.$id})
+
+
+      Alert.alert('Success', 'Post uploaded successfully!', [
+        { text: 'OK', onPress: () => {
+          onUploadSuccess(); // Trigger refresh in parent component
+          onClose(); // Close the modal
+        }}
+      ]);
+    } catch (error) {
+      Alert.alert('Error', error.message)
+    } finally {
+        setForm({
+          title: '',
+          image: null,
+          prompt: '',
+        })
+
+        setUploading(false)
+    }
+
+  
+
   };
 
   const styles = StyleSheet.create({
@@ -34,7 +79,7 @@ const AddNewMedia = ({ isVisible, onClose, colors }) => {
       borderRadius: 20,
       padding: 20,
       width: '90%',
-      height: '90%',
+      height: '65%',
       position: 'relative',
     },
     closeButton: {
@@ -76,7 +121,7 @@ const AddNewMedia = ({ isVisible, onClose, colors }) => {
       height: 56,
       borderWidth: 1,
       borderStyle: 'dashed',
-      borderColor: colors.tint,
+      borderColor: colors.color,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -107,11 +152,21 @@ const AddNewMedia = ({ isVisible, onClose, colors }) => {
       width: '100%',
       height: 256,
       borderRadius: 16,
+      marginBottom: 10
     },
     thumbnail: {
       width: '100%',
       height: 256,
       borderRadius: 16,
+    },
+    loadingContainer: {
+      alignItems: 'center',
+      marginTop: 28,
+    },
+    loadingText: {
+      marginTop: 10,
+      color: colors.text,
+      fontSize: 16,
     },
   });
 
@@ -123,27 +178,33 @@ const AddNewMedia = ({ isVisible, onClose, colors }) => {
             <Text style={styles.closeButtonText}>x</Text>
           </TouchableOpacity>
           
-          <Text style={styles.title}>Upload a Video</Text>
+          <Text style={styles.title}>Upload a Image</Text>
           
           <FormField 
             title="Image Title"
             value={form.title}
             placeholder="Give your image a catchy title..."
             handleChangeText={(e) => setForm({ ...form, title: e })}
-            otherStyles={{ marginTop: 40 }}
+            otherStyles={{ marginTop: 0 }}
             colors={colors}
           />
 
-          <View style={{ marginTop: 28 }}>
-            <Text style={styles.sectionTitle}>Upload Video</Text>
-            <TouchableOpacity onPress={() => openPicker('video')}>
-              {form.video ? (
-                <Video
-                  source={{ uri: form.video.uri }}
+          <FormField 
+            title="Dog Breed"
+            value={form.prompt}
+            placeholder="Please enter the breed of dog..."
+            handleChangeText={(e) => setForm({ ...form, prompt: e })}
+            otherStyles={{ marginTop: 0 }}
+            colors={colors}
+          />
+          <View style={{ marginTop: 0, marginBottom: 15 }}>
+            <Text style={styles.sectionTitle}>Upload An Image</Text>
+            <TouchableOpacity onPress={() => openPicker('image')}>
+              {form.image ? (
+                <Image
+                  source={{ uri: form.image.uri }}
                   style={styles.video}
-                  useNativeControls
                   resizeMode={ResizeMode.COVER}
-                  isLooping
                 />
               ) : (
                 <View style={styles.uploadContainer}>
@@ -152,6 +213,7 @@ const AddNewMedia = ({ isVisible, onClose, colors }) => {
                       source={icons.upload}
                       resizeMode='contain'
                       style={styles.uploadIcon}
+                      
                     />
                   </View>
                 </View>
@@ -159,7 +221,7 @@ const AddNewMedia = ({ isVisible, onClose, colors }) => {
             </TouchableOpacity>
           </View>
 
-          <View style={{ marginTop: 28 }}>
+          {/* <View style={{ marginTop: 28 }}>
             <Text style={styles.sectionTitle}>Thumbnail Image</Text>
             <TouchableOpacity onPress={() => openPicker('image')}>
               {form.thumbnail ? (
@@ -179,24 +241,22 @@ const AddNewMedia = ({ isVisible, onClose, colors }) => {
                 </View>
               )}
             </TouchableOpacity>
-          </View>
-
-          <FormField 
-            title="AI Prompt"
-            value={form.prompt}
-            placeholder="The Prompt you used to create this video"
-            handleChangeText={(e) => setForm({ ...form, prompt: e })}
-            otherStyles={{ marginTop: 28 }}
-            colors={colors}
-          />
+          </View> */}
           
-          <CustomButton 
-            title="Submit & Publish"
-            handlePress={submit}
-            containerStyles={{ marginTop: 28 }}
-            isLoading={uploading}
-            colors={colors}
-          />
+          {uploading ? (
+              <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={styles.loadingText}>Uploading image...</Text>
+            </View>
+          ) : (
+            <CustomButton 
+              title="Submit & Publish"
+              handlePress={submit}
+              containerStyles={{ marginTop: 28 }}
+              colors={colors}
+              
+            />
+          )}
         </View>
       </View>
     </Modal>

@@ -10,12 +10,15 @@ import { scheduleNotification, cancelNotification, requestNotificationPermission
 
 const AlertItem = ({ alert, onToggle, onEdit, onDelete }) => {
   const { colors } = useTheme();
-  
+  const formatTime = (time) => {
+    const date = new Date(time);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
   return (
     <View style={[styles.alertItem, { backgroundColor: colors.background }]}>
       <View style={styles.alertInfo}>
         <Text style={[styles.alertTitle, { color: colors.text }]}>{alert.title}</Text>
-        <Text style={[styles.alertTime, { color: colors.text }]}>{alert.time}</Text>
+        <Text style={[styles.alertTime, { color: colors.text }]}>{formatTime(alert.time)}</Text>
       </View>
       <Switch
         value={alert.isEnabled}
@@ -93,7 +96,7 @@ const CustomAlerts = () => {
         if (updatedAlert.isEnabled) {
           scheduleNotification(updatedAlert);
         } else {
-          cancelNotification(updatedAlert.id);
+          cancelNotification(`custom-${alert.id}`);  // Use a unique identifier for custom alerts
         }
         return updatedAlert;
       }
@@ -102,7 +105,7 @@ const CustomAlerts = () => {
     setAlerts(newAlerts);
     await saveAlerts(newAlerts);
   };
-
+  
   const handleSaveAlert = async (alert) => {
     let newAlerts;
     if (selectedAlert) {
@@ -116,7 +119,7 @@ const CustomAlerts = () => {
       await scheduleNotification(alert);
     }
   };
-
+  
   const handleDeleteAlert = async (id) => {
     Alert.alert(
       "Delete Alert",
@@ -130,12 +133,13 @@ const CustomAlerts = () => {
             const newAlerts = alerts.filter(alert => alert.id !== id);
             setAlerts(newAlerts);
             await saveAlerts(newAlerts);
-            await cancelNotification(id);
+            await cancelNotification(`custom-${id}`);  // Use a unique identifier for custom alerts
           }
         }
       ]
     );
   };
+  
 
   const handleEdit = (alert) => {
     setSelectedAlert(alert);
