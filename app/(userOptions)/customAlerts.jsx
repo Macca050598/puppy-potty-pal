@@ -7,6 +7,7 @@ import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import EditAlertModal from '../../components/EditAlertModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { scheduleNotification, cancelNotification, requestNotificationPermissions } from '../../utils/notificationService';
+import { createAlerts } from '../../lib/appwrite';
 
 const AlertItem = ({ alert, onToggle, onEdit, onDelete }) => {
   const { colors } = useTheme();
@@ -14,6 +15,9 @@ const AlertItem = ({ alert, onToggle, onEdit, onDelete }) => {
     const date = new Date(time);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+ 
+
   return (
     <View style={[styles.alertItem, { backgroundColor: colors.background }]}>
       <View style={styles.alertInfo}>
@@ -42,6 +46,11 @@ const CustomAlerts = () => {
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [weePredictionEnabled, setWeePredictionEnabled] = useState(true);
   const [pooPredictionEnabled, setPooPredictionEnabled] = useState(true);
+  const [alertData, setAlertData] = useState({
+    title: '',
+    data: new Date(),
+    time: new Date(),
+  })
 
   useEffect(() => {
     loadAlerts();
@@ -60,13 +69,30 @@ const CustomAlerts = () => {
     }
   };
 
-  const saveAlerts = async (newAlerts) => {
-    try {
-      await AsyncStorage.setItem('customAlerts', JSON.stringify(newAlerts));
-    } catch (error) {
-      console.error('Error saving alerts:', error);
-    }
-  };
+  const addNewAlerts = async () => {
+  
+      try {
+        const newAlert = await createAlerts(
+          alertData.title,
+          alertData.date,
+          alertData.time
+        )
+        return newAlert;
+      } catch (error) {
+        console.log("Adding new alert error:", error)
+      }
+
+ 
+    return newAlert;
+  }
+
+  // const saveAlerts = async (newAlerts) => {
+  //   try {
+  //     await AsyncStorage.setItem('customAlerts', JSON.stringify(newAlerts));
+  //   } catch (error) {
+  //     console.error('Error saving alerts:', error);
+  //   }
+  // };
 
   const loadPredictionSettings = async () => {
     try {
@@ -103,7 +129,7 @@ const CustomAlerts = () => {
       return alert;
     });
     setAlerts(newAlerts);
-    await saveAlerts(newAlerts);
+    await addNewAlerts();
   };
   
   const handleSaveAlert = async (alert) => {
@@ -114,7 +140,7 @@ const CustomAlerts = () => {
       newAlerts = [...alerts, alert];
     }
     setAlerts(newAlerts);
-    await saveAlerts(newAlerts);
+    await addNewAlerts(title, date, time);
     if (alert.isEnabled) {
       await scheduleNotification(alert);
     }
@@ -132,7 +158,7 @@ const CustomAlerts = () => {
           onPress: async () => {
             const newAlerts = alerts.filter(alert => alert.id !== id);
             setAlerts(newAlerts);
-            await saveAlerts(newAlerts);
+            await addNewAlerts();
             await cancelNotification(`custom-${id}`);  // Use a unique identifier for custom alerts
           }
         }
