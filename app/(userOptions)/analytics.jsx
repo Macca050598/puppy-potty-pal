@@ -160,7 +160,6 @@ const Analytics = () => {
           </View>
         </ScrollView>
 
-        {/* Overlay for "Coming Soon..." */}
         <View style={styles.overlay}>
           <Text style={styles.overlayText}>Coming Soon...</Text>
         </View>

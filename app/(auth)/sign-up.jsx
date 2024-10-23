@@ -16,16 +16,16 @@ const SignUp = () => {
     password: ''
   }); 
 
-  const handleGoogleSignUp = async () => {
-    try {
-      const user = await signUpWithGoogle();
-      await login(user);
-      navigation.navigate('Home');
-    } catch (error) {
-      console.error('Google Sign-Up failed:', error);
-      // Handle error (show error message to user)
-    }
-  };
+  // const handleGoogleSignUp = async () => {
+  //   try {
+  //     const user = await signUpWithGoogle();
+  //     await login(user);
+  //     navigation.navigate('Home');
+  //   } catch (error) {
+  //     console.error('Google Sign-Up failed:', error);
+  //     // Handle error (show error message to user)
+  //   }
+  // };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setUser, setIsLoggedIn } = useGlobalContext();
@@ -138,13 +138,13 @@ const SignUp = () => {
           isLoading={isSubmitting}
         />
 
-      <CustomButton
+      {/* <CustomButton
         title="Sign Up with Google"
         handlePress={handleGoogleSignUp}
         containerStyles={[styles.button, styles.googleButton]}
         textStyles={styles.googleButtonText}
         colors={colors}
-      />
+      /> */}
 
         <View style={styles.linkContainer}>
           <Text style={styles.linkText}>
