@@ -160,9 +160,9 @@ const Analytics = () => {
           </View>
         </ScrollView>
 
-        <View style={styles.overlay}>
+        {/* <View style={styles.overlay}>
           <Text style={styles.overlayText}>Coming Soon...</Text>
-        </View>
+        </View> */}
         <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
 
       </SafeAreaView>

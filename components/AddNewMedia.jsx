@@ -58,6 +58,7 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
           title: '',
           image: null,
           prompt: '',
+          likes: null
         })
 
         setUploading(false)

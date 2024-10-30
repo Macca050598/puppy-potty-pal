@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CustomDropdown from './CustomDropdown.jsx';
-
-const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors }) => {
+import { deleteToiletEvents } from '../lib/appwrite.js';
+const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => {
   const [type, setType] = useState('');
   const [location, setLocation] = useState('');
   const [timestamp, setTimestamp] = useState(new Date());
@@ -22,6 +22,29 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors }) => {
       onSave({ ...trip, type, location, timestamp: timestamp.toISOString() });
     }
     onClose();
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete Trip",
+      "Are you sure you want to delete this trip? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteToiletEvents('delete', dogId);
+              onClose();
+            } catch (error) {
+              console.error('Failed to delete dog:', error);
+              Alert.alert('Error', 'Failed to delete dog. Please try again.');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const onChangeTime = (event, selectedDate) => {
@@ -85,14 +108,17 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors }) => {
     },
     button: {
       borderRadius: 5,
-      padding: 10,
-      width: '45%',
+      padding: 5,
+      width: '33%',
     },
     cancelButton: {
       backgroundColor: colors.secondary,
     },
     saveButton: {
       backgroundColor: colors.primary,
+    },
+    deleteButton: {
+      backgroundColor: colors.secondary,
     },
     cancelButtonText: {
       color: colors.text,
@@ -101,6 +127,11 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors }) => {
     },
     saveButtonText: {
       color: colors.accent,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    deleteButtonText: {
+      color: colors.text,
       fontWeight: 'bold',
       textAlign: 'center',
     },
@@ -154,12 +185,22 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors }) => {
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
+
+
             <TouchableOpacity 
               style={[styles.button, styles.saveButton]} 
               onPress={handleSave}
             >
               <Text style={styles.saveButtonText}>Save Changes</Text>
             </TouchableOpacity>
+
+
+            {/* <TouchableOpacity 
+              style={[styles.button, styles.deleteButton]} 
+              onPress={handleDelete}
+            >
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity> */}
           </View>
         </View>
       </View>
