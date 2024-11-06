@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, TouchableWithoutFeedback } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CustomDropdown from './CustomDropdown.jsx';
 import { deleteToiletEvents } from '../lib/appwrite.js';
+
 const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => {
   const [type, setType] = useState('');
   const [location, setLocation] = useState('');
@@ -139,71 +140,66 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => 
 
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true}>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.title}>Edit Toilet Trip</Text>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalContainer}>
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContent}>
+              <Text style={styles.title}>Edit Toilet Trip</Text>
 
-          <CustomDropdown
-            options={typeOptions}
-            selectedValue={type}
-            onSelect={setType}
-            label="Type of toilet"
-            colors={colors}
-          />
+              <CustomDropdown
+                options={typeOptions}
+                selectedValue={type}
+                onSelect={setType}
+                label="Type of toilet"
+                colors={colors}
+              />
 
-          <CustomDropdown
-            options={locationOptions}
-            selectedValue={location}
-            onSelect={setLocation}
-            label="Location"
-            colors={colors}
-          />
+              <CustomDropdown
+                options={locationOptions}
+                selectedValue={location}
+                onSelect={setLocation}
+                label="Location"
+                colors={colors}
+              />
 
-          <Text style={styles.label}>Time:</Text>
-          <TouchableOpacity 
-            style={styles.timeButton}
-            onPress={() => setShowTimePicker(true)}
-          >
-            <Text style={styles.timeButtonText}>{timestamp.toLocaleTimeString()}</Text>
-          </TouchableOpacity>
+              <Text style={styles.label}>Time:</Text>
+              <TouchableOpacity 
+                style={styles.timeButton}
+                onPress={() => setShowTimePicker(true)}
+              >
+                <Text style={styles.timeButtonText}>{timestamp.toLocaleTimeString()}</Text>
+              </TouchableOpacity>
 
-          {showTimePicker && (
-            <DateTimePicker
-              value={timestamp}
-              mode="time"
-              is24Hour={true}
-              display="default"
-              onChange={onChangeTime}
-              textColor={colors.text}
-            />
-          )}
+              {showTimePicker && (
+                <DateTimePicker
+                  value={timestamp}
+                  mode="time"
+                  is24Hour={true}
+                  display="default"
+                  onChange={onChangeTime}
+                  textColor={colors.text}
+                />
+              )}
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={[styles.button, styles.cancelButton]} 
-              onPress={onClose}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity 
+                  style={[styles.button, styles.cancelButton]} 
+                  onPress={onClose}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
 
-
-            <TouchableOpacity 
-              style={[styles.button, styles.saveButton]} 
-              onPress={handleSave}
-            >
-              <Text style={styles.saveButtonText}>Save Changes</Text>
-            </TouchableOpacity>
-
-
-            {/* <TouchableOpacity 
-              style={[styles.button, styles.deleteButton]} 
-              onPress={handleDelete}
-            >
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity> */}
-          </View>
+                <TouchableOpacity 
+                  style={[styles.button, styles.saveButton]} 
+                  onPress={handleSave}
+                >
+                  <Text style={styles.saveButtonText}>Save Changes</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
