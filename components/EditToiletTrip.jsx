@@ -36,11 +36,11 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => 
           style: "destructive",
           onPress: async () => {
             try {
-              await deleteToiletEvents('delete', dogId);
+              await deleteToiletEvents(trip.$id, dogId);
               onClose();
             } catch (error) {
-              console.error('Failed to delete dog:', error);
-              Alert.alert('Error', 'Failed to delete dog. Please try again.');
+              console.error('Failed to delete toilet event:', error);
+              Alert.alert('Error', 'Failed to delete toilet event. Please try again.');
             }
           }
         }
@@ -110,7 +110,7 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => 
     button: {
       borderRadius: 5,
       padding: 5,
-      width: '33%',
+      width: '30%',
     },
     cancelButton: {
       backgroundColor: colors.secondary,
@@ -119,7 +119,7 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => 
       backgroundColor: colors.primary,
     },
     deleteButton: {
-      backgroundColor: colors.secondary,
+      backgroundColor: colors.error || '#ff4444',
     },
     cancelButtonText: {
       color: colors.text,
@@ -132,7 +132,7 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => 
       textAlign: 'center',
     },
     deleteButtonText: {
-      color: colors.text,
+      color: '#ffffff',
       fontWeight: 'bold',
       textAlign: 'center',
     },
@@ -190,10 +190,17 @@ const EditToiletTrip = ({ isVisible, onClose, onSave, trip, colors, dogId }) => 
                 </TouchableOpacity>
 
                 <TouchableOpacity 
+                  style={[styles.button, styles.deleteButton]} 
+                  onPress={handleDelete}
+                >
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
                   style={[styles.button, styles.saveButton]} 
                   onPress={handleSave}
                 >
-                  <Text style={styles.saveButtonText}>Save Changes</Text>
+                  <Text style={styles.saveButtonText}>Save</Text>
                 </TouchableOpacity>
               </View>
             </View>

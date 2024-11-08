@@ -43,7 +43,7 @@ const Options = () => {
   };
 
   const sendEmail = async (subject) => {
-    const email = 'support@puppypottypal.co.uk';
+    const email = 'support@puppypottypal.com';
     const url = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
     
     try {

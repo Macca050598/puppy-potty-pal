@@ -29,6 +29,9 @@ const Analytics = () => {
     ]
   };
 
+  // Add state to control overlay visibility
+  const [showOverlay] = useState(true);
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -160,9 +163,14 @@ const Analytics = () => {
           </View>
         </ScrollView>
 
-        {/* <View style={styles.overlay}>
-          <Text style={styles.overlayText}>Coming Soon...</Text>
-        </View> */}
+        {showOverlay && (
+          <View style={[styles.overlay, { backgroundColor: 'rgba(0, 0, 0, 0.7)' }]}>
+            <Text style={styles.overlayText}>Coming Soon!</Text>
+            <Text style={[styles.overlayText, { fontSize: 18, marginTop: 10 }]}>
+              Custom Analytics Experience
+            </Text>
+          </View>
+        )}
         <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
 
       </SafeAreaView>

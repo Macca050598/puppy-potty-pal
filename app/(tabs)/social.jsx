@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Image, RefreshControl, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -18,20 +18,26 @@ import ImageCard from '../../components/ImageCard';
 const Social = () => {
   const { user } = useGlobalContext();
   const { colors } = useTheme();
-  const { data: posts, refetch } = useAppwrite(getPosts);
-  const { data: latestPosts } = useAppwrite(getPosts);
+  const { data: posts, refetch, mutate } = useAppwrite(getPosts);
+  const latestPosts = posts?.slice(0, 5);
   const [isMediaVisible, setIsMediaVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
-  const handleUploadSuccess = () => {
-    onRefresh();
+  const handleUploadSuccess = (newPost) => {
+    // Optimistically update the UI
+    mutate((currentPosts) => [newPost, ...currentPosts], false);
   };
 
+  // Debounced refresh
+  const onRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshing, refetch]);
 
   const styles = StyleSheet.create({
     container: {

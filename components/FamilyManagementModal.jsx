@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList, Modal } from 'react-native';
 import { useTheme } from '../config/theme';
-import { updateFamily, leaveFamily, deleteFamily, getFamilyDogs, updateFamilyDogs, getAllUsers, updateFamilyMembers } from '../lib/appwrite';
+import { updateFamily, leaveFamily, deleteFamily, getFamilyDogs, updateFamilyDogs, getAllUsers, updateFamilyMembers, getAllUserDogs } from '../lib/appwrite';
 import AuthenticatedLayout from './AuthenticatedLayout';
 import { StatusBar } from 'expo-status-bar';
 
@@ -12,6 +12,7 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
   const [selectedDogs, setSelectedDogs] = useState({});
   const [allUsers, setAllUsers] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState({});
+  const [allDogs, setAllDogs] = useState([]);
   
   const isAdmin = family && family.admin_id === currentUserId;
 
@@ -25,15 +26,23 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
 
   const fetchFamilyDogs = async () => {
     try {
-      const dogs = await getFamilyDogs(family.$id);
-      setFamilyDogs(dogs);
+      const familyDogsResponse = await getFamilyDogs(family.$id);
+      setFamilyDogs(familyDogsResponse);
+      
+      if (currentUserId) {
+        const userDogsResponse = await getAllUserDogs(currentUserId);
+        setAllDogs(Array.isArray(userDogsResponse) ? userDogsResponse : []);
+      }
+      
       const dogsObj = {};
-      dogs.forEach(dog => {
+      familyDogsResponse.forEach(dog => {
         dogsObj[dog.$id] = true;
       });
       setSelectedDogs(dogsObj);
     } catch (error) {
-      console.error("Error fetching family dogs:", error);
+      setFamilyDogs([]);
+      setAllDogs([]);
+      setSelectedDogs({});
     }
   };
 
@@ -250,6 +259,16 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
         fontSize: 16,
         color: colors.text,
       },
+    list: {
+      maxHeight: 200,
+      marginBottom: 10,
+    },
+    emptyText: {
+      textAlign: 'center',
+      color: colors.text,
+      fontStyle: 'italic',
+      padding: 10,
+    },
   });
 
   return (
@@ -271,11 +290,29 @@ const FamilyManagementModal = ({ visible, family, onClose, onUpdate, currentUser
               placeholderTextColor={colors.placeholder}
               editable={isAdmin}
             />
+            {isAdmin && (
+              <>
+                <Text style={styles.sectionTitle}>Available Dogs</Text>
+                <FlatList
+                  data={allDogs}
+                  renderItem={renderDogItem}
+                  keyExtractor={(item) => item.$id}
+                  style={styles.list}
+                  ListEmptyComponent={() => (
+                    <Text style={styles.emptyText}>No available dogs</Text>
+                  )}
+                />
+              </>
+            )}
             <Text style={styles.sectionTitle}>Family Dogs</Text>
             <FlatList
               data={familyDogs}
               renderItem={renderDogItem}
               keyExtractor={(item) => item.$id}
+              style={styles.list}
+              ListEmptyComponent={() => (
+                <Text style={styles.emptyText}>No family dogs</Text>
+              )}
             />
             <Text style={styles.sectionTitle}>Family Members</Text>
             <FlatList

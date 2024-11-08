@@ -7,16 +7,14 @@ import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import EditAlertModal from '../../components/EditAlertModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { scheduleNotification, cancelNotification, requestNotificationPermissions } from '../../utils/notificationService';
-import { createAlerts } from '../../lib/appwrite';
+import { createAlerts, updateAlert, deleteAlert, getAlerts } from '../../lib/appwrite';
 
-const AlertItem = ({ alert, onToggle, onEdit, onDelete }) => {
+const AlertItem = ({ alert, onToggle, onDelete }) => {
   const { colors } = useTheme();
   const formatTime = (time) => {
     const date = new Date(time);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
-
- 
 
   return (
     <View style={[styles.alertItem, { backgroundColor: colors.background }]}>
@@ -29,10 +27,7 @@ const AlertItem = ({ alert, onToggle, onEdit, onDelete }) => {
         onValueChange={() => onToggle(alert.id)}
         trackColor={{ false: colors.accent, true: colors.primary }}
       />
-      <TouchableOpacity onPress={() => onEdit(alert)}>
-        <Feather name="edit" size={24} color={colors.primary} />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(alert.id)}>
+      <TouchableOpacity onPress={() => onDelete(alert.$id)}>
         <Feather name="trash-2" size={24} color={colors.error} />
       </TouchableOpacity>
     </View>
@@ -48,9 +43,9 @@ const CustomAlerts = () => {
   const [pooPredictionEnabled, setPooPredictionEnabled] = useState(true);
   const [alertData, setAlertData] = useState({
     title: '',
-    data: new Date(),
+    date: new Date(),
     time: new Date(),
-  })
+  });
 
   useEffect(() => {
     loadAlerts();
@@ -60,10 +55,8 @@ const CustomAlerts = () => {
 
   const loadAlerts = async () => {
     try {
-      const savedAlerts = await AsyncStorage.getItem('customAlerts');
-      if (savedAlerts !== null) {
-        setAlerts(JSON.parse(savedAlerts));
-      }
+      const alerts = await getAlerts();
+      setAlerts(alerts);
     } catch (error) {
       console.error('Error loading alerts:', error);
     }
@@ -133,20 +126,40 @@ const CustomAlerts = () => {
   };
   
   const handleSaveAlert = async (alert) => {
-    let newAlerts;
-    if (selectedAlert) {
-      newAlerts = alerts.map(a => a.id === alert.id ? alert : a);
-    } else {
-      newAlerts = [...alerts, alert];
-    }
-    setAlerts(newAlerts);
-    await addNewAlerts(title, date, time);
-    if (alert.isEnabled) {
-      await scheduleNotification(alert);
+    try {
+      console.log('Alert being saved:', alert);
+      const dateTime = new Date(alert.time);
+      
+      if (dateTime <= new Date()) {
+        Alert.alert('Invalid Time', 'Please select a future time for the alert');
+        return;
+      }
+
+      if (selectedAlert) {
+        await handleUpdateAlert({
+          ...alert,
+          $id: selectedAlert.$id
+        });
+      } else {
+        const newAlert = await createAlerts(
+          alert.title,
+          dateTime,
+          dateTime
+        );
+        setAlerts(prev => [...prev, newAlert]);
+      }
+
+      if (alert.isEnabled) {
+        await scheduleNotification(alert);
+      }
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Error saving alert:', error);
+      Alert.alert('Error', 'Failed to save alert');
     }
   };
   
-  const handleDeleteAlert = async (id) => {
+  const handleDeleteAlert = async (alertId) => {
     Alert.alert(
       "Delete Alert",
       "Are you sure you want to delete this alert?",
@@ -156,21 +169,20 @@ const CustomAlerts = () => {
           text: "Delete", 
           style: "destructive", 
           onPress: async () => {
-            const newAlerts = alerts.filter(alert => alert.id !== id);
-            setAlerts(newAlerts);
-            await addNewAlerts();
-            await cancelNotification(`custom-${id}`);  // Use a unique identifier for custom alerts
+            try {
+              await deleteAlert(alertId);
+              setAlerts(prev => prev.filter(alert => alert.$id !== alertId));
+              await cancelNotification(`custom-${alertId}`);
+            } catch (error) {
+              console.error('Error deleting alert:', error);
+              Alert.alert('Error', 'Failed to delete alert');
+            }
           }
         }
       ]
     );
   };
   
-
-  const handleEdit = (alert) => {
-    setSelectedAlert(alert);
-    setIsModalVisible(true);
-  };
 
   const handleAddAlert = () => {
     setSelectedAlert(null);
@@ -198,11 +210,10 @@ const CustomAlerts = () => {
             <AlertItem
               alert={item}
               onToggle={handleToggle}
-              onEdit={handleEdit}
               onDelete={handleDeleteAlert}
             />
           )}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.$id || item.id}
           ListHeaderComponent={
             <>
               <View style={styles.header}>
@@ -233,12 +244,7 @@ const CustomAlerts = () => {
             </>
           }
         />
-        <EditAlertModal
-          isVisible={isModalVisible}
-          onClose={() => setIsModalVisible(false)}
-          onSave={handleSaveAlert}
-          alert={selectedAlert}
-        />
+     
       </SafeAreaView>
     </AuthenticatedLayout>
   );
