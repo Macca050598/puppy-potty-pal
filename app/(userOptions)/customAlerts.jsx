@@ -218,7 +218,10 @@ const CustomAlerts = () => {
             <>
               <View style={styles.header}>
                 <Text style={[styles.headerText, { color: colors.text }]}>Custom Alerts</Text>
-                <TouchableOpacity onPress={handleAddAlert} style={styles.addButton}>
+                <TouchableOpacity 
+                  onPress={handleAddAlert} 
+                  style={styles.addButton}
+                >
                   <Feather name="plus" size={24} color={colors.primary} />
                 </TouchableOpacity>
               </View>
@@ -244,7 +247,15 @@ const CustomAlerts = () => {
             </>
           }
         />
-     
+        
+        {isModalVisible && (
+          <EditAlertModal
+            visible={isModalVisible}
+            onClose={() => setIsModalVisible(false)}
+            onSave={handleSaveAlert}
+            initialAlert={selectedAlert}
+          />
+        )}
       </SafeAreaView>
     </AuthenticatedLayout>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,6 +16,7 @@ const EditProfile = () => {
   const [avatar, setAvatar] = useState(user?.avatar || null);
   const [password, setPassword] = useState('');
   const [isFormChanged, setIsFormChanged] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const hasChanges = 
@@ -26,49 +27,69 @@ const EditProfile = () => {
   }, [username, email, avatar, user]);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please grant access to your photo library to change your avatar.');
+        return;
+      }
 
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      console.log('Image picker result:', result);
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        console.log('Selected image URI:', imageUri);
+        setAvatar(imageUri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
     }
   };
 
   const handleSave = async () => {
+    if (!isFormChanged) return;
+
     if (!password) {
       Alert.alert('Error', 'Please enter your password to save changes.');
       return;
     }
-  
+
+    setIsLoading(true);
     try {
       let updatedUser = { ...user };
-  
-      // Only update username if it has changed
+
+      if (avatar && avatar !== user.avatar) {
+        console.log('Updating avatar with URI:', avatar);
+        const avatarUrl = await updateUserAvatar(user.$id, avatar);
+        console.log('Received avatar URL:', avatarUrl);
+        updatedUser.avatar = avatarUrl;
+      }
+
       if (username !== user.username) {
         updatedUser = await updateUserName(username);
       }
-  
-      // Only update email if it has changed
+
       if (email !== user.email) {
         updatedUser = await updateUserEmail(email, password);
       }
-  
-      // Only update avatar if it has changed
-      if (avatar !== user.avatar) {
-        const avatarUrl = await updateUserAvatar(user.$id, avatar);
-        updatedUser.avatar = avatarUrl;
-      }
-  
+
       setUser(updatedUser);
       Alert.alert('Success', 'Profile updated successfully');
       setPassword('');
+      setIsFormChanged(false);
     } catch (error) {
       console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      Alert.alert('Error', error.message || 'Failed to update profile. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -76,7 +97,11 @@ const EditProfile = () => {
     <AuthenticatedLayout>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView>
-          <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
+          <TouchableOpacity 
+            style={styles.avatarContainer} 
+            onPress={pickImage}
+            disabled={isLoading}
+          >
             {avatar ? (
               <Image source={{ uri: avatar }} style={styles.avatar} />
             ) : (
@@ -84,51 +109,70 @@ const EditProfile = () => {
                 <Feather name="camera" size={40} color={colors.primary} />
               </View>
             )}
+            <Text style={[styles.changeAvatarText, { color: colors.text }]}>
+              Tap to change avatar
+            </Text>
           </TouchableOpacity>
-          
-          <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Username</Text>
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-              value={username}
-              onChangeText={setUsername}
-              placeholderTextColor={colors.text}
-            />
-          </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              placeholderTextColor={colors.text}
-            />
-          </View>
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: colors.text }]}>Username</Text>
+              <TextInput
+                style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+                value={username}
+                onChangeText={setUsername}
+                placeholderTextColor={colors.text}
+                editable={!isLoading}
+              />
+            </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Password (required to save changes)</Text>
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.border }]}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholderTextColor={colors.text}
-              placeholder="Enter your password"
-            />
-          </View>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
+              <TextInput
+                style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                placeholderTextColor={colors.text}
+                editable={!isLoading}
+                autoCapitalize="none"
+              />
+            </View>
 
-          <TouchableOpacity
-            style={[
-              styles.saveButton, 
-              { backgroundColor: (isFormChanged && password) ? colors.primary : colors.secondary }
-            ]}
-            onPress={handleSave}
-            disabled={!isFormChanged || !password}
-          >
-            <Text style={[styles.saveButtonText, { color: colors.background }]}>Save Changes</Text>
-          </TouchableOpacity>
+            {isFormChanged && (
+              <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  Current Password (required to save changes)
+                </Text>
+                <TextInput
+                  style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  placeholderTextColor={colors.text}
+                  editable={!isLoading}
+                />
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                { backgroundColor: colors.primary },
+                (!isFormChanged || isLoading) && styles.disabledButton
+              ]}
+              onPress={handleSave}
+              disabled={!isFormChanged || isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={[styles.saveButtonText, { color: colors.white }]}>
+                  Save Changes
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </AuthenticatedLayout>
@@ -138,11 +182,10 @@ const EditProfile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
   avatarContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginVertical: 20,
   },
   avatar: {
     width: 150,
@@ -156,28 +199,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  changeAvatarText: {
+    marginTop: 8,
+    fontSize: 14,
+    opacity: 0.8,
+  },
+  form: {
+    padding: 20,
+  },
   inputContainer: {
     marginBottom: 20,
   },
   label: {
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 8,
   },
   input: {
-    height: 40,
+    height: 45,
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    borderRadius: 8,
+    paddingHorizontal: 12,
   },
   saveButton: {
-    padding: 15,
-    borderRadius: 5,
+    height: 45,
+    borderRadius: 8,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   saveButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });
 

@@ -39,6 +39,34 @@ const Social = () => {
     }
   }, [refreshing, refetch]);
 
+  const handleLikeImage = async (imageId) => {
+    if (!imageId) {
+      console.error('No imageId provided to likeImage function');
+      return;
+    }
+    try {
+      // Optimistically update UI first
+      mutate((currentPosts) => {
+        return currentPosts.map((post) => {
+          if (post.$id === imageId) {
+            return {
+              ...post,
+              likes: [...(post.likes || []), user.$id]
+            };
+          }
+          return post;
+        });
+      }, false);
+
+      // Make API call to update likes
+      await likeImage(imageId);
+    } catch (error) {
+      console.error('Error liking image:', error);
+      // Revert optimistic update on error
+      await refetch();
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.background,
@@ -99,6 +127,7 @@ const Social = () => {
       avatar={item.creator.avatar}
       colors={colors}
       likes={item.likes}
+      onLike={handleLikeImage}
     />
           )}
           ListHeaderComponent={() => (

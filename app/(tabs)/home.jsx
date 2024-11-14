@@ -507,7 +507,7 @@ const Home = () => {
             onChooseEating={modalActions.openEatingModal}
             colors={colors}
           />
-
+          
           <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
         </>
       )}
