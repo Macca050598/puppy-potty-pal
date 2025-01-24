@@ -13,7 +13,7 @@ const AuthenticatedLayout = ({ children }) => {
   return (
     <View style={{ flex: 1 }}>
       {children}
-      <GlobalDogPopup />
+      {/* <GlobalDogPopup /> */}
     </View>
   );
 };

@@ -6,28 +6,19 @@ import { images } from '../../constants';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
-import { createUser, signUpWithGoogle } from '../../lib/appwrite';
+import { createUser } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { StatusBar } from 'expo-status-bar';
+import EULAModal from '../../components/EULAModal';
+
 const SignUp = () => {
   const [form, setForm] = useState({
     username: '',
     email: '',
     password: ''
-  }); 
-
-  // const handleGoogleSignUp = async () => {
-  //   try {
-  //     const user = await signUpWithGoogle();
-  //     await login(user);
-  //     navigation.navigate('Home');
-  //   } catch (error) {
-  //     console.error('Google Sign-Up failed:', error);
-  //     // Handle error (show error message to user)
-  //   }
-  // };
-
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEULA, setShowEULA] = useState(false);
   const { setUser, setIsLoggedIn } = useGlobalContext();
   const { colors } = useTheme();
 
@@ -88,8 +79,12 @@ const SignUp = () => {
       Alert.alert('Error', 'Please fill in all the fields');
       return;
     }
-    setIsSubmitting(true);
+    setShowEULA(true);
+  };
 
+  const handleEULAAccept = async () => {
+    setShowEULA(false);
+    setIsSubmitting(true);
     try {
       const result = await createUser(form.email, form.password, form.username);
       setUser(result);
@@ -103,11 +98,16 @@ const SignUp = () => {
     }
   };
 
+  const handleEULADecline = () => {
+    setShowEULA(false);
+    Alert.alert('Sign Up Cancelled', 'You must accept the Terms of Service to use Puppy Potty Pal.');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.contentContainer}>
-        <Image source={images.logoSmall} resizeMode='contain' style={styles.logo} />
+          <Image source={images.logoSmall} resizeMode='contain' style={styles.logo} />
         </View>
         <Text style={styles.title}>Sign up to Puppy Potty Pal</Text>
 
@@ -129,6 +129,7 @@ const SignUp = () => {
           value={form.password}
           handleChangeText={(e) => setForm({ ...form, password: e })}
           otherStyles={styles.formField}
+          secureTextEntry
         />
 
         <CustomButton
@@ -155,7 +156,11 @@ const SignUp = () => {
           </Link>
         </View>
         <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
-
+        <EULAModal 
+          visible={showEULA}
+          onAccept={handleEULAAccept}
+          onDecline={handleEULADecline}
+        />
       </ScrollView>
     </SafeAreaView>
   );

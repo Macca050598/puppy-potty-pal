@@ -357,7 +357,7 @@ const Home = () => {
     addButton: {
       position: 'absolute',
       right: 20,
-      bottom: 20,
+      bottom: 60,
       backgroundColor: colors.primary,
       borderRadius: 30,
       width: 60,
@@ -405,7 +405,7 @@ const Home = () => {
   return (
     <SafeAreaView style={styles.container}>
       {isLoading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="24" color={colors.primary} />
       ) : (
         <>
           <FlatList
@@ -439,7 +439,7 @@ const Home = () => {
             style={styles.addButton}
             onPress={modalActions.openChoiceModal}
           >
-            <Feather name="plus" size={30} color={colors.background} />
+            <Feather name="plus" size={40} color={colors.background} />
           </TouchableOpacity>
 
           <AddNewDog

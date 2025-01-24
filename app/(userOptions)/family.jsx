@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, FlatList } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../config/theme';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
-import { useNavigation } from '@react-navigation/native';
+// import { useNavigation } from '@react-navigation/native';
 import { createFamily, getUserFamilies, joinFamily } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import FamilyManagementModal from '../../components/FamilyManagementModal';
@@ -12,7 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 
 const Family = () => {
   const { colors } = useTheme();
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   const { user } = useGlobalContext();
   const [familyName, setFamilyName] = useState('');
   const [familyCode, setFamilyCode] = useState('');

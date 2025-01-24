@@ -104,7 +104,7 @@ const Analytics = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* {isLoading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="24" color={colors.primary} />
       ) : ( */}
         <>
           {renderCharts()}

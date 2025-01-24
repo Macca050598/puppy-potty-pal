@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../config/theme';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { updateUserName, updateUserEmail, updateUserAvatar } from '../../lib/appwrite';
+import { updateUserName, updateUserEmail, updateUserAvatar, deleteUserAccount } from '../../lib/appwrite';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
+import { useRouter } from 'expo-router';
 
 const EditProfile = () => {
   const { colors } = useTheme();
@@ -17,6 +18,9 @@ const EditProfile = () => {
   const [password, setPassword] = useState('');
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     const hasChanges = 
@@ -93,6 +97,21 @@ const EditProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (confirmText.toLowerCase() !== 'delete my account') {
+      Alert.alert('Error', 'Please type "delete my account" to confirm');
+      return;
+    }
+
+    try {
+      await deleteUserAccount();
+      router.replace('/sign-in');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      Alert.alert('Error', 'Failed to delete account. Please try again.');
+    }
+  };
+
   return (
     <AuthenticatedLayout>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -155,6 +174,8 @@ const EditProfile = () => {
               </View>
             )}
 
+            <View style={[styles.separator, { backgroundColor: colors.border }]} />
+
             <TouchableOpacity
               style={[
                 styles.saveButton,
@@ -172,8 +193,64 @@ const EditProfile = () => {
                 </Text>
               )}
             </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.deleteButton, { backgroundColor: colors.error }]}
+              onPress={() => setShowDeleteModal(true)}
+            >
+              <Text style={styles.deleteButtonText}>Delete Account</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
+
+        <Modal
+          visible={showDeleteModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowDeleteModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Delete Account</Text>
+              <Text style={[styles.modalText, { color: colors.text }]}>
+                This action cannot be undone. All your data will be permanently deleted.
+                To confirm, please type "delete my account" below:
+              </Text>
+              
+              <TextInput
+                style={[styles.confirmInput, { 
+                  borderColor: colors.border,
+                  color: colors.text,
+                  backgroundColor: colors.card
+                }]}
+                value={confirmText}
+                onChangeText={setConfirmText}
+                placeholder="Type 'delete my account'"
+                placeholderTextColor={colors.text + '80'}
+                autoCapitalize="none"
+              />
+              
+              <View style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={[styles.modalButton, { backgroundColor: colors.card }]}
+                  onPress={() => {
+                    setShowDeleteModal(false);
+                    setConfirmText('');
+                  }}
+                >
+                  <Text style={[styles.modalButtonText, { color: colors.text }]}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.modalButton, { backgroundColor: colors.error }]}
+                  onPress={handleDeleteAccount}
+                >
+                  <Text style={[styles.modalButtonText, { color: '#FFFFFF' }]}>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </AuthenticatedLayout>
   );
@@ -233,6 +310,68 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
+  },
+  separator: {
+    height: 1,
+    marginVertical: 20,
+  },
+  deleteButton: {
+    height: 45,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  deleteButtonText: {
+    color: '#FF3B30',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '90%',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  confirmInput: {
+    width: '100%',
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 8,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

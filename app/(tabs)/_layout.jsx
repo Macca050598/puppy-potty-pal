@@ -6,16 +6,19 @@ import { useTheme } from '../../config/theme';
 
 const TabIcon = ({ icon, color, name, focused }) => {
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+    <View style={{ alignItems: 'center', justifyContent: '', gap: 1 }}>
       <Image 
         source={icon}
         resizeMode="contain"
-        style={{ width: 24, height: 24, tintColor: color }}
+        style={{ width: 70, height: 25, tintColor: color }}
       />
       <Text style={{ 
-        fontSize: 12, 
+        fontSize: 16, 
         fontWeight: focused ? '600' : '400',
-        color: color
+        color: color,
+        width: 70,
+        textAlign: 'center',
+        paddingLeft: 0
       }}>
         {name}
       </Text>
@@ -34,11 +37,12 @@ const TabsLayout = () => {
           tabBarActiveTintColor: colors.random,
           tabBarInactiveTintColor: colors.text,
           tabBarStyle: {
-            paddingTop: 2,
+            paddingTop: 12,
+            padding: 5,
             backgroundColor: colors.secondary,
             borderTopWidth: 1,
             borderTopColor: colors.tint,
-            height: 84
+            height: 70,
           }
         }}
       >

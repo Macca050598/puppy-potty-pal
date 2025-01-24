@@ -246,7 +246,7 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
           
           {uploading ? (
               <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary} />
+              <ActivityIndicator size="25" color={colors.primary} />
               <Text style={styles.loadingText}>Uploading image...</Text>
             </View>
           ) : (
