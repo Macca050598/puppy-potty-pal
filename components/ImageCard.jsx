@@ -2,11 +2,12 @@ import React, { useState, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Alert, Linking, Clipboard } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { likeImage, deleteImage } from '../lib/appwrite';
-
+import { useGlobalContext } from '../context/GlobalProvider';
 const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete }) => {
   const [likeCount, setLikeCount] = useState(likes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const animatedScale = useRef(new Animated.Value(1)).current;
+  const {user} = useGlobalContext();
 
   const handleLike = async () => {
     try {
@@ -98,53 +99,33 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
       marginBottom: 24,
       backgroundColor: colors.background,
     },
-    row: {
-      flexDirection: 'row',
-      gap: 12,
-      alignItems: 'flex-start',
-      width: '100%',
-      marginBottom: 12,
-    },
-    avatarContainer: {
-      width: 46,
-      height: 46,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: colors.secondary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 2,
-    },
-    avatar: {
-      width: '100%',
-      height: '100%',
-      borderRadius: 8,
-    },
-    infoContainer: {
-      justifyContent: 'center',
-      flex: 1,
-      marginLeft: 12,
-      gap: 4,
-    },
-    title: {
-      color: colors.text,
-      fontWeight: '600',
-      fontSize: 16,
-    },
-    creator: {
-      color: colors.primary,
-      fontSize: 14,
-    },
     imageContainer: {
       width: '100%',
       height: 240,
       borderRadius: 12,
       overflow: 'hidden',
       marginBottom: 12,
+      position: 'relative',
     },
     image: {
       width: '100%',
       height: '100%',
+    },
+    buttonContainer: {
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
+      flexDirection: 'row',
+      gap: 10,
+    },
+    button: {
+      padding: 5,
+      backgroundColor: colors.primary,
+      borderRadius: 5,
+    },
+    buttonText: {
+      color: '#fff',
+      textAlign: 'center',
     },
     likeContainer: {
       flexDirection: 'row',
@@ -158,47 +139,30 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
       color: colors.text,
       fontSize: 14,
     },
-    buttonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 10,
-    },
-    button: {
-      padding: 10,
-      backgroundColor: colors.primary,
-      borderRadius: 5,
-      marginHorizontal: 5,
-    },
-    buttonText: {
-      color: '#fff',
-      textAlign: 'center',
-    },
   });
 
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <View style={styles.avatarContainer}>
-          <Image source={{uri: avatar}} style={styles.avatar} resizeMode='cover'/>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.title} numberOfLines={1}>
-            {title}
-          </Text> 
-          <Text style={styles.creator} numberOfLines={1}>
-            {creator}
-          </Text>
-        </View>
-      </View>
-
       <View style={styles.imageContainer}>
         <Image 
-          source={{ uri: imageUrl}}
+          source={{ uri: imageUrl }}
           style={styles.image}
           resizeMode='cover'
         />
+        <View style={styles.buttonContainer}>
+         {/* {console.log(creator)}
+         {console.log(user.username)} */}
+        {creator === user.username && ( // Only show delete button if the user is the creator
+            <TouchableOpacity onPress={handleDelete} style={styles.button}>
+              <Text style={styles.buttonText}>Delete</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={handleReport} style={styles.button}>
+            <Text style={styles.buttonText}>Report</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      
+
       <TouchableOpacity onPress={handleLike} style={styles.likeContainer}>
         <Animated.View style={[styles.likeIcon, { transform: [{ scale: animatedScale }] }]}>
           <Feather 
@@ -209,15 +173,6 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
         </Animated.View>
         <Text style={styles.likeCount}>{likeCount}</Text>
       </TouchableOpacity>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleDelete} style={styles.button}>
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleReport} style={styles.button}>
-          <Text style={styles.buttonText}>Report</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
