@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
     height: 24,
   },
   avatarContainer: {
-    width: 64,
-    height: 64,
+    width: 120,
+    height: 120,
     borderWidth: 1,
     borderRadius: 8,
     justifyContent: 'center',

@@ -14,7 +14,8 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: '',
-    image: null
+    image: null,
+    prompt: ''
   });
 
   const openPicker = async (selectType) => {
@@ -34,16 +35,34 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
   }
 
   const submit = async () => {
-    if(!form.title || !form.image || !form.prompt ) {
-      return Alert.alert("Please fill in all the fields..")
+    if (!form.title || !form.image || !form.prompt) {
+      return Alert.alert("Please fill in all the fields..");
     }
+    const imageUri = form.image.uri; 
+    console.log(imageUri)
+    setUploading(true);
 
-    setUploading(true)
-
+    
     try {
+      const imageUri = form.image.uri; 
+      const response = await fetch('https://6793c1caefb677d85901.appwrite.global/v1/functions/6793c5aad6b04a0e42f2/executions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': '66af9c38001e2e6ad8e9', // Replace with your actual project ID
+          'X-Appwrite-Function': '6793c5aad6b04a0e42f2', // Replace with your actual function ID
+        },
+        body: JSON.stringify({ imageUri}), // The URI of the image to be moderated
+      });
+      console.log('Request payload:', { imageUri });
+      const moderationResult = await response.json();
+      if (!moderationResult.isApproved) {
+        Alert.alert('Moderation Error', 'Inappropriate content detected.');
+        return;
+      }
 
-      await createImage({...form, userId: user.$id})
-
+      // Proceed with the image upload
+      await createImage({ ...form, userId: user.$id });
 
       Alert.alert('Success', 'Post uploaded successfully!', [
         { text: 'OK', onPress: () => {
@@ -52,20 +71,16 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
         }}
       ]);
     } catch (error) {
-      Alert.alert('Error', error.message)
+      Alert.alert('Error', error.message);
     } finally {
-        setForm({
-          title: '',
-          image: null,
-          prompt: '',
-          likes: null
-        })
-
-        setUploading(false)
+      setForm({
+        title: '',
+        image: null,
+        prompt: '',
+        likes: null
+      });
+      setUploading(false);
     }
-
-  
-
   };
 
   const styles = StyleSheet.create({

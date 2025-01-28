@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Alert, Linking, Clipboard } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { likeImage } from '../lib/appwrite';
+import { likeImage, deleteImage } from '../lib/appwrite';
 
-const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes }) => {
+const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete }) => {
   const [likeCount, setLikeCount] = useState(likes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const animatedScale = useRef(new Animated.Value(1)).current;
@@ -21,6 +21,73 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes }) => 
     } catch (error) {
       console.error("Error liking image:", error);
     }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete Image",
+      "Are you sure you want to delete this image?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "OK", onPress: async () => {
+            try {
+              await deleteImage($id);
+              console.log("Image deleted successfully");
+              onDelete();
+            } catch (error) {
+              console.error("Error deleting image:", error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const reportImage = async (imageId, imageUrl) => {
+    const email = 'support@puppypottypal.com'; // Your email address
+    const subject = encodeURIComponent(`Report for Image ID: ${imageId}`);
+    const body = encodeURIComponent(`I would like to report the following image:\n\nImage ID: ${imageId}\nReason: Inappropriate content\nImage URL: ${imageUrl}`);
+    
+    const url = `mailto:${email}?subject=${subject}&body=${body}`;
+    
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        throw new Error("Email client not available");
+      }
+    } catch (error) {
+      console.error("Error opening email client:", error);
+      Alert.alert(
+        "Can't Open Email",
+        `We couldn't open your email client. Would you like to copy the support email address (${email}) to your clipboard instead?`,
+        [
+          { text: "No", style: "cancel" },
+          { 
+            text: "Yes, Copy Email", 
+            onPress: () => {
+              Clipboard.setString(email);
+              Alert.alert("Email Copied", `The support email (${email}) has been copied to your clipboard.`);
+            }
+          }
+        ]
+      );
+    }
+  };
+
+  const handleReport = async () => {
+    Alert.alert(
+      "Report Image",
+      "Are you sure you want to report this image?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "OK", onPress: () => {
+            reportImage($id, imageUrl);
+          }
+        }
+      ]
+    );
   };
 
   const styles = StyleSheet.create({
@@ -91,6 +158,21 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes }) => 
       color: colors.text,
       fontSize: 14,
     },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 10,
+    },
+    button: {
+      padding: 10,
+      backgroundColor: colors.primary,
+      borderRadius: 5,
+      marginHorizontal: 5,
+    },
+    buttonText: {
+      color: '#fff',
+      textAlign: 'center',
+    },
   });
 
   return (
@@ -127,6 +209,15 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes }) => 
         </Animated.View>
         <Text style={styles.likeCount}>{likeCount}</Text>
       </TouchableOpacity>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleDelete} style={styles.button}>
+          <Text style={styles.buttonText}>Delete</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleReport} style={styles.button}>
+          <Text style={styles.buttonText}>Report</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
