@@ -1,99 +1,84 @@
-Puppy Potty Pal 🐾
+<div align="center"> <img src="logo.png" alt="Puppy Potty Pal Logo" width="200" /> <h1>Puppy Potty Pal 🐾</h1> <p>Your ultimate companion for puppy toilet training!</p> <p> <img src="https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native" /> <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" /> <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI" /> <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License" /> </p> </div>
+Table of Contents
+Features
 
-Puppy Potty Pal is a fun and practical iOS app built with Expo and React Native to help dog owners (especially puppy parents!) track and predict their dog's toilet and eating schedules. With a touch of AI magic, it provides personalized recommendations to make puppy toilet training a breeze. Plus, it includes a social feature to share adorable dog pics with other pet lovers!
+How It Works
+
+Tech Stack
+
+Installation
+
+Screenshots
+
+License
 
 Features 🚀
+🐶 Multi-Dog Tracking
+Add and track multiple dogs in one app.
 
-- Multi-Dog Tracking - Add as many dogs as you want to your profile.
+Log toilet and eating times for each dog.
 
-- Track toilet and eating times for each dog individually.
+👨‍👩‍👧‍👦 Family Sharing
+Create a family group and share a unique family code.
 
-- Family Sharing - Create a family group and share a unique family code.
+Family members can join and track the same dogs together.
 
-- Family members can join and track the same dogs together.
+🤖 AI-Powered Recommendations
+Every 24 hours, the app sends your dog's toilet data to the OpenAI API.
 
-- AI-Powered Recommendations - Every 24 hours, the app sends your dog's toilet data to the OpenAI API.
+Receive personalized analysis and tips to improve your puppy's toilet training.
 
-- Receive personalised analysis and recommendations to improve your puppy's toilet training routine.
+📸 Social Media for Dog Lovers
+Share pictures of your furry friends.
 
-- Social Media for Dog Lovers / Share pictures of your furry friends. / Like and comment on other users' dog photos./ Connect with a community of dog lovers.
+Like and comment on other users' dog photos.
+
+Connect with a community of dog lovers.
 
 How It Works 🛠️
+Track: Log your dog's toilet and eating times.
 
-- Track: Log your dog's toilet and eating times.
+Analyze: The app uses an algorithm to predict when your dog will next need to go.
 
-- Analyze: The app uses an algorithm to predict when your dog will next need to go.
+Recommend: OpenAI analyzes the data and provides daily tips.
 
-- Recommend: OpenAI analyzes the data and provides daily tips.
+Share: Add family members or share your dog's progress with friends.
 
-- Share: Add family members or share your dog's progress with friends.
-
-- Socialize: Post pictures of your pup and engage with other users.
+Socialize: Post pictures of your pup and engage with other users.
 
 Tech Stack 💻
-
-- Frontend: React Native (Expo)
-
-- Backend: Firebase (or your backend service)
-
-- AI Integration: OpenAI API
-
-- Database: Appwrite
-
-- Social Media: Custom-built feed with image upload and interaction features
-
-
+Tech	Description
+React Native	Frontend framework for cross-platform apps.
+Expo	Toolchain for building React Native apps.
+OpenAI API	AI-powered recommendations for dog training.
+Firebase	Backend and database for user data.
+Tailwind CSS	Utility-first CSS framework for styling.
 Installation 🛠️
+<details> <summary>Click to expand installation steps</summary>
+bash
+Copy
+# Clone the repository
+git clone https://github.com/your-username/puppy-potty-pal.git
+cd puppy-potty-pal
 
-To run this project locally, follow these steps:
+# Install dependencies
+npm install
 
-Clone the repository:
+# Set up environment variables
+cp .env.example .env
+# Add your OpenAI API key and Firebase credentials to .env
 
-   
-   git clone https://github.com/your-username/puppy-potty-pal.git
-
-   Navigate to the project directory:
-
-   cd puppy-potty-pal
-
-   Install dependencies:
-    npm install
-   Start the development server:
-    expo start
-    Scan the QR code with the Expo Go app on your iOS device, or run it on an emulator.
-
-  Configuration ⚙️
-
-To use the OpenAI API and other services, you'll need to set up environment variables. Create a .env file in the root directory
-
-
-
-Contributing 🤝
-
-We welcome contributions! If you'd like to contribute to Puppy Potty Pal, please follow these steps:
-
-Fork the repository.
-
-Create a new branch:
-
-git checkout -b feature/your-feature-name
-
-Commit your changes:
-
-git commit -m "Add your message here"
-
-Push to the branch:
-
-git push origin feature/your-feature-name
-
-Open a pull request.
-
+# Start the development server
+expo start
+</details>
+Screenshots 📱
+<div align="center"> <img src="screenshots/home.png" alt="Home Screen" width="200" /> <img src="screenshots/tracking.png" alt="Tracking Screen" width="200" /> <img src="screenshots/social.png" alt="Social Feed" width="200" /> </div>
 License 📜
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 Contact 📧
 Have questions or feedback? Feel free to reach out!
-📩 Email: mackenzie050598@gmail.com
+📩 Email: your-email@example.com
+🌐 Website: yourwebsite.com
 
-Made with ❤️ by Mackenzie Williams
-
+Made with ❤️ by [Your Name]
