@@ -61,14 +61,12 @@ cp .env.example .env
 # Start the development server
 expo start
 </details>
-Screenshots 📱
-<div align="center"> <img src="screenshots/home.png" alt="Home Screen" width="200" /> <img src="screenshots/tracking.png" alt="Tracking Screen" width="200" /> <img src="screenshots/social.png" alt="Social Feed" width="200" /> </div>
+
 License 📜
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 Contact 📧
 Have questions or feedback? Feel free to reach out!
-📩 Email: your-email@example.com
-🌐 Website: yourwebsite.com
+📩 Email: mackenzie050598@gmail.com
 
 Made with ❤️ by [Your Name]
