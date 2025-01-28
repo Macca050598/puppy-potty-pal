@@ -1,16 +1,6 @@
 <div align="center"> <img src="logo.png" alt="Puppy Potty Pal Logo" width="200" /> <h1>Puppy Potty Pal 🐾</h1> <p>Your ultimate companion for puppy toilet training!</p> <p> <img src="https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native" /> <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" /> <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI" /> <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License" /> </p> </div>
-Table of Contents
-Features
 
-How It Works
-
-Tech Stack
-
-Installation
-
-Screenshots
-
-License
+Puppy Potty Pal is a fun and practical iOS app built with Expo and React Native to help dog owners (especially puppy parents!) track and predict their dog's toilet and eating schedules.
 
 Features 🚀
 🐶 Multi-Dog Tracking
