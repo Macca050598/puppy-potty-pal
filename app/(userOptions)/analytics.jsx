@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Dimensions, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Dimensions, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../config/theme';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { getAllDogsCombinedEvents, getUserAndFamilyDogs } from '../../lib/appwrite';
 import * as Animatable from 'react-native-animatable';
 import { format } from 'date-fns';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
 const Analytics = () => {
   const { colors } = useTheme();
   const { user } = useGlobalContext();
@@ -13,7 +16,8 @@ const Analytics = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const screenWidth = Math.min(Dimensions.get("window").width, 500);
-
+  const router = useRouter();
+ 
   useEffect(() => {
     loadAnalytics();
   }, [selectedDog]);
@@ -101,8 +105,17 @@ const Analytics = () => {
     );
   };
 
+  const handleBackPress = () => {
+
+    router.back();
+
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color={colors.background} />
+      </TouchableOpacity>
       {/* {isLoading ? (
         <ActivityIndicator size="24" color={colors.primary} />
       ) : ( */}
@@ -170,6 +183,13 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     maxWidth: '80%',
+  },
+  backButton: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 100,
   },
 });
 

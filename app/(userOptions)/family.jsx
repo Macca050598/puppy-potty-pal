@@ -7,8 +7,9 @@ import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { createFamily, getUserFamilies, joinFamily } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import FamilyManagementModal from '../../components/FamilyManagementModal';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 
 const Family = () => {
   const { colors } = useTheme();
@@ -20,6 +21,7 @@ const Family = () => {
   const [loading, setLoading] = useState(true);
   const [selectedFamily, setSelectedFamily] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchFamilies();
@@ -71,6 +73,10 @@ const Family = () => {
   const handleFamilyPress = (family) => {
     setSelectedFamily(family);
     setModalVisible(true);
+  };
+
+  const handleBackPress = () => {
+    router.back();
   };
 
   const renderFamilyItem = ({ item }) => (
@@ -145,12 +151,21 @@ const Family = () => {
       fontSize: 16,
       fontWeight: 200,
       marginBottom: 5,
-    }
+    },
+    backButton: {
+      position: 'absolute',
+      top: 50,
+      left: 20,
+      zIndex: 1,
+    },
   });
 
   return (
     <AuthenticatedLayout>
       <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right', 'top']}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
         <View style={styles.content}>
           <Text style={styles.title}>Your Families</Text>
           

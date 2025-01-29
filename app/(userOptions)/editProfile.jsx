@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../../config/theme';
 import { useGlobalContext } from '../../context/GlobalProvider';
@@ -112,9 +112,16 @@ const EditProfile = () => {
     }
   };
 
+  const handleBackPress = () => {
+    router.back();
+  };
+
   return (
     <AuthenticatedLayout>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
         <ScrollView>
           <TouchableOpacity 
             style={styles.avatarContainer} 
@@ -372,6 +379,12 @@ const styles = StyleSheet.create({
   modalButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 1,
   },
 });
 

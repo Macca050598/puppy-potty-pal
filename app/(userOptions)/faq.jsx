@@ -5,8 +5,13 @@ import { useTheme } from '../../config/theme';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { styles } from './editProfile';
+
 const FAQ = () => {
   const { colors } = useTheme();
+  const router = useRouter();
 
   const faqData = [
     {
@@ -35,7 +40,9 @@ const FAQ = () => {
       icon: "clock"
     }
   ];
-
+  const handleBackPress = () => {
+    router.back();
+  };
   const Accordion = ({ title, content, icon }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [animation] = useState(new Animated.Value(0));
@@ -116,12 +123,22 @@ const FAQ = () => {
       fontSize: 14,
       lineHeight: 20,
     },
+    backButton: {
+      position: 'absolute',
+      top: 60,
+      left: 20,
+      zIndex: 1,
+    },
   });
 
   return (
     <AuthenticatedLayout>
+       <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
       <SafeAreaView style={styles.container}>
         <ScrollView style={styles.content}>
+            
           <Text style={styles.title}>Frequently Asked Questions</Text>
           {faqData.map((item, index) => (
             <Accordion

@@ -8,7 +8,8 @@ import EditAlertModal from '../../components/EditAlertModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { scheduleNotification, cancelNotification, requestNotificationPermissions } from '../../utils/notificationService';
 import { createAlerts, updateAlert, deleteAlert, getAlerts } from '../../lib/appwrite';
-
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 const AlertItem = ({ alert, onToggle, onDelete }) => {
   const { colors } = useTheme();
   const formatTime = (time) => {
@@ -46,6 +47,8 @@ const CustomAlerts = () => {
     date: new Date(),
     time: new Date(),
   });
+  const router = useRouter();
+
 
   useEffect(() => {
     loadAlerts();
@@ -60,6 +63,10 @@ const CustomAlerts = () => {
     } catch (error) {
       console.error('Error loading alerts:', error);
     }
+  };
+
+  const handleBackPress = () => {
+    router.back();
   };
 
   const addNewAlerts = async () => {
@@ -203,6 +210,9 @@ const CustomAlerts = () => {
 
   return (
     <AuthenticatedLayout>
+          <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <FlatList
           data={alerts}
@@ -315,6 +325,12 @@ const styles = StyleSheet.create({
   },
   predictionText: {
     fontSize: 16,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 1,
   },
 });
 
