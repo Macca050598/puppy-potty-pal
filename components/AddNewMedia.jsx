@@ -43,8 +43,8 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
         name: 'upload.jpg'
       });
       formData.append('models', 'nudity-2.1,offensive-2.0,text-content,face-attributes,gore-2.0,self-harm');
-      formData.append('api_user', '923154362');
-      formData.append('api_secret', 'Z3fgC3ZokHsVs7xiWX7TCmrFonCEPVoN');
+      formData.append('api_user', '******');
+      formData.append('api_secret', '******');
 
       const response = await axios({
         method: 'post',
