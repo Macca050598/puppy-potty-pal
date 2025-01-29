@@ -18,7 +18,7 @@
     "@react-navigation/native": "^6.1.18",
     "@tensorflow/tfjs": "^4.20.0",
     "@tensorflow/tfjs-react-native": "^1.0.0",
-    "axios": "^1.7.4",
+    "axios": "^1.7.9",
     "date-fns": "^3.6.0",
     "expo": "^52.0.27",
     "expo-av": "~15.0.2",

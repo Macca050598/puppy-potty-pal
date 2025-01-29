@@ -24,8 +24,12 @@ const Social = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const handleUploadSuccess = (newPost) => {
-    // Optimistically update the UI
-    mutate((currentPosts) => [newPost, ...currentPosts], false);
+    if (typeof mutate === 'function') {
+      mutate((currentPosts) => [newPost, ...currentPosts], false);
+      refetch();
+    } else {
+      console.error('mutate is not a function');
+    }
   };
 
   // Debounced refresh

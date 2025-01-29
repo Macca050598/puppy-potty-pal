@@ -34,7 +34,8 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
             try {
               await deleteImage($id);
               console.log("Image deleted successfully");
-              onDelete();
+              // onDelete();
+             
             } catch (error) {
               console.error("Error deleting image:", error);
             }

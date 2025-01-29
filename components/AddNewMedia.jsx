@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { createImage } from '../lib/appwrite.js';
 import {useGlobalContext} from '../context/GlobalProvider.js';
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';  // Make sure to install axios if you haven't already
 
 const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
   const {user} = useGlobalContext();
@@ -33,55 +34,88 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
       }
     }
   }
-
-  const submit = async () => {
-    if (!form.title || !form.image || !form.prompt) {
-      return Alert.alert("Please fill in all the fields..");
-    }
-    const imageUri = form.image.uri; 
-    console.log(imageUri)
-    setUploading(true);
-
-    
+  const moderateImage = async (imageUri) => {
     try {
-      const imageUri = form.image.uri; 
-      const response = await fetch('https://6793c1caefb677d85901.appwrite.global/v1/functions/6793c5aad6b04a0e42f2/executions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Appwrite-Project': '66af9c38001e2e6ad8e9', // Replace with your actual project ID
-          'X-Appwrite-Function': '6793c5aad6b04a0e42f2', // Replace with your actual function ID
-        },
-        body: JSON.stringify({ imageUri}), // The URI of the image to be moderated
+      const formData = new FormData();
+      formData.append('media', {
+        uri: imageUri,
+        type: 'image/jpeg', // or the appropriate MIME type
+        name: 'upload.jpg'
       });
-      console.log('Request payload:', { imageUri });
-      const moderationResult = await response.json();
-      if (!moderationResult.isApproved) {
-        Alert.alert('Moderation Error', 'Inappropriate content detected.');
-        return;
+      formData.append('models', 'nudity-2.1,offensive-2.0,text-content,face-attributes,gore-2.0,self-harm');
+      formData.append('api_user', '923154362');
+      formData.append('api_secret', 'Z3fgC3ZokHsVs7xiWX7TCmrFonCEPVoN');
+
+      const response = await axios({
+        method: 'post',
+        url: 'https://api.sightengine.com/1.0/check.json',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+
+      // Check moderation results
+      const result = response.data;
+      
+      // You can adjust these thresholds based on your needs
+      if (
+        result.nudity < 0.8 ||
+        result.offensive > 0.7 ||
+        result.gore > 0.7 ||
+        result.self_harm > 0.7
+      ) {
+        return {
+          isApproved: false,
+          reason: 'Content violated community guidelines'
+        };
       }
 
-      // Proceed with the image upload
-      await createImage({ ...form, userId: user.$id });
-
-      Alert.alert('Success', 'Post uploaded successfully!', [
-        { text: 'OK', onPress: () => {
-          onUploadSuccess(); // Trigger refresh in parent component
-          onClose(); // Close the modal
-        }}
-      ]);
+      return { isApproved: true };
     } catch (error) {
-      Alert.alert('Error', error.message);
-    } finally {
-      setForm({
-        title: '',
-        image: null,
-        prompt: '',
-        likes: null
-      });
-      setUploading(false);
+      console.error('Moderation error:', error);
+      throw new Error('Image moderation failed');
     }
   };
+
+ // Remove this nested submit function
+const submit = async () => {
+  if (!form.title || !form.image || !form.prompt) {
+    return Alert.alert("Please fill in all the fields..");
+  }
+  setUploading(true);
+
+  try {
+    // Moderate the image first
+    const moderationResult = await moderateImage(form.image.uri);
+    
+    if (!moderationResult.isApproved) {
+      Alert.alert('Content Warning', moderationResult.reason);
+      return;
+    }
+
+    // If moderation passes, proceed with the image upload
+    await createImage({ ...form, userId: user.$id });
+
+    Alert.alert('Success', 'Post uploaded successfully!', [
+      { text: 'OK', onPress: () => {
+        onUploadSuccess();
+        onClose();
+      }}
+    ]);
+  } catch (error) {
+    console.error('Upload error:', error);  // Add this for debugging
+    Alert.alert('Error', error.message);
+  } finally {
+    setForm({
+      title: '',
+      image: null,
+      prompt: '',
+      likes: null
+    });
+    setUploading(false);
+  }
+};
 
   const styles = StyleSheet.create({
     modalOverlay: {
