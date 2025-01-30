@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Alert, Linki
 import { Feather } from '@expo/vector-icons';
 import { likeImage, deleteImage } from '../lib/appwrite';
 import { useGlobalContext } from '../context/GlobalProvider';
-const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete }) => {
+const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete, onClose }) => {
   const [likeCount, setLikeCount] = useState(likes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const animatedScale = useRef(new Animated.Value(1)).current;
@@ -33,8 +33,12 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
         { text: "OK", onPress: async () => {
             try {
               await deleteImage($id);
-              console.log("Image deleted successfully");
-              // onDelete();
+              Alert.alert('Success', 'Image deleted successfully!', [
+                { text: 'OK', onPress: () => {
+                  
+                }}
+              ]);
+              
              
             } catch (error) {
               console.error("Error deleting image:", error);
@@ -47,8 +51,8 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
 
   const reportImage = async (imageUrl, $id) => {
     const email = 'support@puppypottypal.com'; // Your email address
-    const subject = encodeURIComponent(`Report for Image ID: ${$id}`);
-    const body = encodeURIComponent(`I would like to report the following image:\n\nImage ID: ${$id}\nReason: Please state the reason as to why you want to report this image\nImage URL: ${imageUrl}`);
+    const subject = encodeURIComponent(`Report for Image ID: ${imageUrl}`);
+    const body = encodeURIComponent(`I would like to report the following image:\n\nImage ID: \n ${imageUrl}\nReason: Please state the reason as to why you want to report this image\nImage URL: ${$id}`);
     
     const url = `mailto:${email}?subject=${subject}&body=${body}`;
     

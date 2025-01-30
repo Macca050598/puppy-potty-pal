@@ -27,6 +27,7 @@ const Social = () => {
   const handleUploadSuccess = (newPost) => {
     if (typeof mutate === 'function') {
       mutate((currentPosts) => [newPost, ...currentPosts], false);
+      setRefreshing(true);
       refetch();
     } else {
       console.error('mutate is not a function');

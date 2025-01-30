@@ -38,9 +38,11 @@ const AddToiletTrip = ({ isVisible, onClose, onAddTrip, colors }) => {
     if (tripData.selectedDog) {
       try {
         await onAddTrip(tripData.selectedDog.$id, tripData.type, tripData.location, tripData.timestamp);
-        await predictNextWeeTrip(tripData.selectedDog.$id);
-        await predictNextPooTrip(tripData.selectedDog.$id);
+        
+        predictNextWeeTrip(tripData.selectedDog.$id);
+        predictNextPooTrip(tripData.selectedDog.$id);
         onClose();
+        
       } catch (error) {
         console.error('Failed to add trip or predict next trip:', error);
         alert('Failed to add trip. Please try again.');
