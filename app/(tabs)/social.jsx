@@ -1,3 +1,4 @@
+// Social.js
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Image, RefreshControl, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,7 +33,10 @@ const Social = () => {
     }
   };
 
-  // Debounced refresh
+  const handleModalClose = () => {
+    setIsMediaVisible(false);
+  };
+
   const onRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -49,7 +53,6 @@ const Social = () => {
       return;
     }
     try {
-      // Optimistically update UI first
       mutate((currentPosts) => {
         return currentPosts.map((post) => {
           if (post.$id === imageId) {
@@ -62,11 +65,9 @@ const Social = () => {
         });
       }, false);
 
-      // Make API call to update likes
       await likeImage(imageId);
     } catch (error) {
       console.error('Error liking image:', error);
-      // Revert optimistic update on error
       await refetch();
     }
   };
@@ -119,20 +120,20 @@ const Social = () => {
   return (
     <AuthenticatedLayout>
       <SafeAreaView style={styles.container}>
-      <FlatList
-  data={posts}
-  keyExtractor={(item) => item.$id}
-  renderItem={({ item }) => (
-    <ImageCard
-      $id={item.$id}
-      title={item.title}
-      imageUrl={item.image}
-      creator={item.creator.username}
-      avatar={item.creator.avatar}
-      colors={colors}
-      likes={item.likes}
-      onLike={handleLikeImage}
-    />
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.$id}
+          renderItem={({ item }) => (
+            <ImageCard
+              $id={item.$id}
+              title={item.title}
+              imageUrl={item.image}
+              creator={item.creator.username}
+              avatar={item.creator.avatar}
+              colors={colors}
+              likes={item.likes}
+              onLike={handleLikeImage}
+            />
           )}
           ListHeaderComponent={() => (
             <View style={styles.header}>
@@ -159,8 +160,9 @@ const Social = () => {
                   Latest Posts
                 </Text>
                 <Trending 
-                posts={latestPosts ?? []} 
-                colors={colors} />
+                  posts={latestPosts ?? []} 
+                  colors={colors} 
+                />
               </View>
             </View>
           )}
@@ -181,19 +183,17 @@ const Social = () => {
           }
         />
 
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={isMediaVisible}
-          onRequestClose={() => setIsMediaVisible(false)}
-        >
+        
           <AddNewMedia
             isVisible={isMediaVisible}
-            onClose={() => setIsMediaVisible(false)}
+            onClose={() => {
+              console.log('Closing modal');
+              setIsMediaVisible(false);
+            }}
             onUploadSuccess={handleUploadSuccess}
             colors={colors}
           />
-        </Modal>
+        
 
         <StatusBar backgroundColor={colors.accent} style={colors.text === "#FFFFFF" ? "light" : "dark"} />
       </SafeAreaView>

@@ -10,14 +10,15 @@ import {useGlobalContext} from '../context/GlobalProvider.js';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';  // Make sure to install axios if you haven't already
 
-const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
+const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess, onRefresh }) => {
   const {user} = useGlobalContext();
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: '',
     image: null,
     prompt: ''
-  });
+  }); 
+
 
   const openPicker = async (selectType) => {
     // No permissions request is necessary for launching the image library
@@ -78,7 +79,6 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess }) => {
     }
   };
 
- // Remove this nested submit function
 const submit = async () => {
   if (!form.title || !form.image || !form.prompt) {
     return Alert.alert("Please fill in all the fields..");
@@ -302,9 +302,8 @@ const submit = async () => {
             <CustomButton 
               title="Submit & Publish"
               handlePress={submit}
-              containerStyles={{ marginTop: 28 }}
+              containerStyles="bg-primary rounded-lg p-3"
               colors={colors}
-              
             />
           )}
         </View>

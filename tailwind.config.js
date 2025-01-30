@@ -41,5 +41,4 @@ module.exports = {
       backgroundOpacity: ['responsive', 'hover', 'focus', 'active'],
     },
   },
-  plugins: [],
 };

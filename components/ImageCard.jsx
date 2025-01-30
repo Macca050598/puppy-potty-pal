@@ -45,10 +45,10 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
     );
   };
 
-  const reportImage = async (imageId, imageUrl) => {
+  const reportImage = async (imageUrl, $id) => {
     const email = 'support@puppypottypal.com'; // Your email address
-    const subject = encodeURIComponent(`Report for Image ID: ${imageId}`);
-    const body = encodeURIComponent(`I would like to report the following image:\n\nImage ID: ${imageId}\nReason: Inappropriate content\nImage URL: ${imageUrl}`);
+    const subject = encodeURIComponent(`Report for Image ID: ${$id}`);
+    const body = encodeURIComponent(`I would like to report the following image:\n\nImage ID: ${$id}\nReason: Please state the reason as to why you want to report this image\nImage URL: ${imageUrl}`);
     
     const url = `mailto:${email}?subject=${subject}&body=${body}`;
     
