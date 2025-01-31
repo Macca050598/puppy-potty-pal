@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { ResizeMode } from 'expo-av';
 import CustomButton from './CustomButton.jsx';
 import FormField from '../components/FormField.jsx';
 import icons from '../constants/icons.js';

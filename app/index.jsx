@@ -66,13 +66,13 @@ export default function App() {
         },
         button: {
             width: '100%',
-            marginTop: 28,
+            marginTop: 20,
             padding: 20,
-            fontSize: 15,
+            fontSize: 18,
         },
         textStyles: {
-            fontSize: 12,
-            padding: 15,
+            fontSize: 16,
+            padding: 10,
         }
     });
 

@@ -46,7 +46,7 @@ const EULAModal = ({ visible, onAccept, onDecline }) => {
       backgroundColor: colors.primary,
     },
     declineButton: {
-      backgroundColor: colors.error,
+      backgroundColor: colors.text,
     },
     buttonText: {
       color: '#FFFFFF',

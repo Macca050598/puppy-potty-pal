@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Alert, Linki
 import { Feather } from '@expo/vector-icons';
 import { likeImage, deleteImage } from '../lib/appwrite';
 import { useGlobalContext } from '../context/GlobalProvider';
-const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete, onClose }) => {
+const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete, onClose, imageId }) => {
   const [likeCount, setLikeCount] = useState(likes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const animatedScale = useRef(new Animated.Value(1)).current;
@@ -144,10 +144,26 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
       color: colors.text,
       fontSize: 14,
     },
+    title: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 8,
+    },
+    breed: {
+      fontSize: 16,
+      marginBottom: 8,
+    },
+    uploader: {
+      fontSize: 14,
+      marginBottom: 8,
+    },
   });
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.uploader}>{user.username}</Text>
+      
       <View style={styles.imageContainer}>
         <Image 
           source={{ uri: imageUrl }}

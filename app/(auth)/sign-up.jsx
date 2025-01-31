@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Image, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../config/theme';
 import { images } from '../../constants';
@@ -132,12 +132,15 @@ const SignUp = () => {
           secureTextEntry
         />
 
-        <CustomButton
-          title="Sign Up"
-          handlePress={submit}
-          containerStyles={styles.buttonContainer}
-          isLoading={isSubmitting}
-        />
+        {isSubmitting ? (
+          <ActivityIndicator size="large" color="#E67E22" />
+        ) : (
+          <CustomButton
+            title="Sign Up"
+            handlePress={submit}
+            containerStyles={styles.buttonContainer}
+          />
+        )}
 
       {/* <CustomButton
         title="Sign Up with Google"

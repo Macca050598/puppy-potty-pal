@@ -9,7 +9,6 @@ import Trending from '../../components/Trending';
 import EmptyState from '../../components/EmptyState';
 import { getPosts } from '../../lib/appwrite';
 import useAppwrite from '../../lib/useAppwrite';
-import VideoCard from '../../components/VideoCard';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import AddNewMedia from '../../components/AddNewMedia';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
@@ -129,8 +128,8 @@ const Social = () => {
               $id={item.$id}
               title={item.title}
               imageUrl={item.image}
-              creator={item.creator.username}
-              avatar={item.creator.avatar}
+              creator={item.creator ? item.creator.username : 'Unknown Creator'}
+              avatar={item.creator ? item.creator.avatar : null}
               colors={colors}
               likes={item.likes}
               onLike={handleLikeImage}

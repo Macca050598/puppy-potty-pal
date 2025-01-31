@@ -19,27 +19,74 @@ const Profile = () => {
   const { data: posts, refetch } = useAppwrite(() => getPosts(user.$id));
   const [refreshing, setRefreshing] = useState(false);
 
+    // Log the posts structure for debugging
+    console.log('Posts:', posts);
+
+    // Filter posts to only include those from the logged-in user
+    const userPosts = posts.filter(post => {
+      // Check if post.creator exists and has the $id property
+      if (post.creator && post.creator.$id) {
+        console.log('Post Creator ID:', post.creator.$id); // Log each post's creator ID
+        console.log('User ID:', user.$id); // Log the user ID
+        return post.creator.$id === user.$id; // Check if the creator's ID matches the user's ID
+      }
+      return false; // If post.creator is null or doesn't have $id, exclude this post
+    });
+  
+    // Log the filtered user posts
+    console.log('User Posts:', userPosts);
+
+
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   };
 
+  const handleLikeImage = async (imageId) => {
+    if (!imageId) {
+      console.error('No imageId provided to likeImage function');
+      return;
+    }
+    try {
+      mutate((currentPosts) => {
+        return currentPosts.map((post) => {
+          if (post.$id === imageId) {
+            return {
+              ...post,
+              likes: [...(post.likes || []), user.$id]
+            };
+          }
+          return post;
+        });
+      }, false);
 
+      await likeImage(imageId);
+    } catch (error) {
+      console.error('Error liking image:', error);
+      await refetch();
+    }
+  };
+
+  const totalLikes = posts.reduce((acc, post) => acc + (post.likes || 0), 0);
+  console.log(totalLikes)
+  
   return (
     <AuthenticatedLayout>
       <SafeAreaView style={{ backgroundColor: colors.background, flex: 1 }}>
         <FlatList
-          data={posts}
+          data={userPosts}
           keyExtractor={(item) => item.$id}
           renderItem={({ item }) => (
             <ImageCard
+              $id={item.$id}
               title={item.title}
               imageUrl={item.image}
               creator={item.creator.username}
               avatar={item.creator.avatar}
               colors={colors}
               likes={item.likes}
+              onLike={handleLikeImage}
             />
           )}
           ListHeaderComponent={() => (
@@ -55,7 +102,7 @@ const Profile = () => {
               />
               <View style={styles.statsContainer}>
                 <InfoBox 
-                  title={posts.length || 0}
+                  title={userPosts.length || 0}
                   subtitle="Posts"
                   containerStyles={styles.statBox}
                   titleStyles={[styles.statTitle, { color: colors.text }]}
@@ -63,7 +110,7 @@ const Profile = () => {
                   colors={colors}
                 />
                 <InfoBox 
-                  title="1.2k"
+                  title={totalLikes}
                   subtitle="Likes"
                   titleStyles={[styles.statTitle, { color: colors.text }]}
                   subtitleStyles={[styles.statSubtitle, { color: colors.text }]}
@@ -72,14 +119,7 @@ const Profile = () => {
               </View>
             </View>
           )}
-          ListEmptyComponent={() => (
-            <EmptyState
-              title="No Images Found"
-              subtitle="You haven't posted any images yet"
-              titleStyle={{ color: colors.text }}
-              subtitleStyle={{ color: colors.tint }}
-            />
-          )}
+
           refreshControl={
             <RefreshControl 
               refreshing={refreshing} 

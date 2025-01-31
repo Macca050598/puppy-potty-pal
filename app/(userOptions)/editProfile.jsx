@@ -252,7 +252,7 @@ const EditProfile = () => {
                   style={[styles.modalButton, { backgroundColor: colors.error }]}
                   onPress={handleDeleteAccount}
                 >
-                  <Text style={[styles.modalButtonText, { color: '#FFFFFF' }]}>Delete</Text>
+                  <Text style={[styles.modalButtonText, { color: '#FF3B30' }]}>Delete</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -328,6 +328,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
+    color: '#FF3B30',
+    backgroundColor: '#FF3B30'
   },
   deleteButtonText: {
     color: '#FF3B30',
@@ -368,6 +370,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    
+    
   },
   modalButton: {
     flex: 1,
