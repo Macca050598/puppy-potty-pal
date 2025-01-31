@@ -3,7 +3,7 @@
     "name": "Puppy Potty Pal",
     "slug": "puppy-potty-pal",
     "scheme": "puppy-potty-pal",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/PPPLogos/Icons/Icon01.png",
     "userInterfaceStyle": "light",

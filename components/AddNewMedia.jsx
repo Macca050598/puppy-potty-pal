@@ -97,7 +97,7 @@ const submit = async () => {
     // If moderation passes, proceed with the image upload
     await createImage({ ...form, userId: user.$id });
 
-    Alert.alert('Success', 'Post uploaded successfully!', [
+    Alert.alert('Success', 'Post uploaded successfully!, Please refresh the page.', [
       { text: 'OK', onPress: () => {
         onUploadSuccess();
         onClose();

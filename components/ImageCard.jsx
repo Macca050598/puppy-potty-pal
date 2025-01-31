@@ -33,7 +33,7 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
         { text: "OK", onPress: async () => {
             try {
               await deleteImage($id);
-              Alert.alert('Success', 'Image deleted successfully!', [
+              Alert.alert('Success', 'Image deleted successfully!, Please refresh the page.', [
                 { text: 'OK', onPress: () => {
                   
                 }}
@@ -52,7 +52,7 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
   const reportImage = async (imageUrl, $id) => {
     const email = 'support@puppypottypal.com'; // Your email address
     const subject = encodeURIComponent(`Report for Image ID: ${imageUrl}`);
-    const body = encodeURIComponent(`I would like to report the following image:\n\nImage ID: \n ${imageUrl}\nReason: Please state the reason as to why you want to report this image\nImage URL: ${$id}`);
+    const body = encodeURIComponent(`Reason: Please state the reason as to why you want to report this image\nI would like to report the following image:\n\nImage ID: \n ${imageUrl}\nImage URL: ${$id}`);
     
     const url = `mailto:${email}?subject=${subject}&body=${body}`;
     
