@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { ResizeMode } from 'expo-av';
 import CustomButton from './CustomButton.jsx';
 import FormField from '../components/FormField.jsx';
@@ -10,6 +10,7 @@ import {useGlobalContext} from '../context/GlobalProvider.js';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';  // Make sure to install axios if you haven't already
 
+
 const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess, onRefresh }) => {
   const {user} = useGlobalContext();
   const [uploading, setUploading] = useState(false);
@@ -18,6 +19,7 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess, onRefresh })
     image: null,
     prompt: ''
   }); 
+  const [eulaVisible, setEulaVisible] = useState(false);
 
 
   const openPicker = async (selectType) => {
@@ -129,7 +131,7 @@ const submit = async () => {
       borderRadius: 20,
       padding: 20,
       width: '90%',
-      height: '65%',
+      height: '80%',
       position: 'relative',
     },
     closeButton: {
@@ -159,7 +161,7 @@ const submit = async () => {
     },
     uploadContainer: {
       width: '100%',
-      height: 160,
+      height: 10,
       padding: 16,
       backgroundColor: colors.secondary,
       borderRadius: 16,
@@ -218,7 +220,55 @@ const submit = async () => {
       color: colors.text,
       fontSize: 16,
     },
+    eulaText: {
+      marginTop: 10,
+      color: colors.text,
+      fontSize: 16,
+      textAlign: 'center',
+    },
+    link: {
+      color: colors.primary,
+      fontSize: 16,
+      textAlign: 'center',
+      marginTop: 10,
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 20,
+    },
+    button: {
+      padding: 15,
+      borderRadius: 10,
+    },
+    buttonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: colors.background,
+    },
+    text: {
+      marginTop: 10,
+      color: colors.text,
+      fontSize: 16,
+    },
+    emphasisText: {
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    bulletPoint: {
+      marginLeft: 20,
+      color: colors.text,
+    },
   });
+
+  const handleEulaAccept = () => {
+    setEulaVisible(false);
+    submit();
+  };
+
+  const handleEulaDecline = () => {
+    setEulaVisible(false);
+  };
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent={true}>
@@ -280,36 +330,4 @@ const submit = async () => {
                   resizeMode='cover'
                   style={styles.thumbnail}
                 />
-              ) : (
-                <View style={styles.thumbnailContainer}>
-                  <Image 
-                    source={icons.upload}
-                    resizeMode='contain'
-                    style={styles.uploadIcon}
-                  />
-                  <Text style={styles.thumbnailText}>Choose a file</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View> */}
-          
-          {uploading ? (
-              <View style={styles.loadingContainer}>
-              <ActivityIndicator size="25" color={colors.primary} />
-              <Text style={styles.loadingText}>Uploading image...</Text>
-            </View>
-          ) : (
-            <CustomButton 
-              title="Submit & Publish"
-              handlePress={submit}
-              containerStyles="bg-primary rounded-lg p-3"
-              colors={colors}
-            />
-          )}
-        </View>
-      </View>
-    </Modal>
-  );
-};
-
-export default AddNewMedia;
+         

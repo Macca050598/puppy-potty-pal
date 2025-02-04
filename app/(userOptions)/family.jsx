@@ -104,6 +104,8 @@ const Family = () => {
       fontWeight: 'bold',
       color: colors.text,
       marginBottom: 20,
+      alignItems: 'center',
+      paddingLeft: '40%'
     },
     input: {
       width: '100%',
