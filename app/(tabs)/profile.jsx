@@ -12,13 +12,21 @@ import InfoBox from '../../components/InfoBox';
 import { RefreshControl } from 'react-native';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { useTheme } from '../../config/theme';
+import UserDetailModal from '../../components/UserDetailModal'; // Import the new modal component
 
 const Profile = () => {
   const { user } = useGlobalContext();
   const { colors } = useTheme();
   const { data: posts, refetch } = useAppwrite(() => getPosts(user.$id));
   const [refreshing, setRefreshing] = useState(false);
+  const [isUserModalVisible, setIsUserModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
+  const handleUserPress = (creator) => {
+    // Fetch user details (e.g., from Appwrite) and set state
+    setSelectedUser(creator);
+    setIsUserModalVisible(true);
+  };
     // Log the posts structure for debugging
     console.log('Posts:', posts);
 
@@ -87,6 +95,8 @@ const Profile = () => {
               colors={colors}
               likes={item.likes}
               onLike={handleLikeImage}
+              onUserPress={handleUserPress}
+
             />
           )}
           ListHeaderComponent={() => (
@@ -127,6 +137,12 @@ const Profile = () => {
               tintColor={colors.tint}
             />
           }
+          
+        />
+        <UserDetailModal 
+          visible={isUserModalVisible} 
+          user={handleUserPress} 
+          onClose={() => setIsUserModalVisible(false)} 
         />
       </SafeAreaView>
     </AuthenticatedLayout>

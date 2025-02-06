@@ -330,4 +330,86 @@ const submit = async () => {
                   resizeMode='cover'
                   style={styles.thumbnail}
                 />
-         
+              ) : (
+                <View style={styles.thumbnailContainer}>
+                  <Image 
+                    source={icons.upload}
+                    resizeMode='contain'
+                    style={styles.uploadIcon}
+                  />
+                  <Text style={styles.thumbnailText}>Choose a file</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View> */}
+          
+          {uploading ? (
+              <View style={styles.loadingContainer}>
+              <ActivityIndicator size="25" color={colors.primary} />
+              <Text style={styles.loadingText}>Uploading image...</Text>
+            </View>
+          ) : (
+            <CustomButton 
+              title="Submit & Publish"
+              handlePress={() => setEulaVisible(true)}
+              containerStyles="bg-primary rounded-lg p-3"
+              colors={colors}
+            />
+          )}
+
+          <Text style={styles.eulaText}>
+            By uploading this photo, I abide by the Puppy Potty Pals EULA Terms.
+          </Text>
+          <TouchableOpacity onPress={() => setEulaVisible(true)}>
+            <Text style={styles.link}>View EULA</Text>
+          </TouchableOpacity>
+
+          <Modal visible={eulaVisible} transparent animationType="fade">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <ScrollView>
+                  <Text style={styles.title}>Content Upload Agreement</Text>
+                  <Text style={styles.text}>
+                    Before uploading your image, please confirm that your content meets our community guidelines:
+                  </Text>
+                  <Text style={styles.emphasisText}>I confirm that this image:</Text>
+                  <Text style={styles.bulletPoint}>• Contains only appropriate images of dogs</Text>
+                  <Text style={styles.bulletPoint}>• Does not contain any explicit, violent, or inappropriate content</Text>
+                  <Text style={styles.bulletPoint}>• Does not violate any copyright or intellectual property rights</Text>
+                  <Text style={styles.bulletPoint}>• Does not contain any personally identifiable information</Text>
+                  <Text style={styles.bulletPoint}>• Complies with all app terms and community guidelines</Text>
+                  <Text style={styles.text}>
+                    By proceeding with the upload, you acknowledge that:
+                  </Text>
+                  <Text style={styles.bulletPoint}>• Your content may be reviewed by our moderation team</Text>
+                  <Text style={styles.bulletPoint}>• Content violating our terms will be removed</Text>
+                  <Text style={styles.bulletPoint}>• Repeated violations may result in account suspension</Text>
+                  <Text style={styles.bulletPoint}>• You are granting us license to store and display this content</Text>
+                  <Text style={styles.emphasisText}>
+                    Violation of these terms may result in content removal and account penalties.
+                  </Text>
+                </ScrollView>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity 
+                    style={[styles.button, { backgroundColor: colors.text }]} 
+                    onPress={handleEulaDecline}
+                  >
+                    <Text style={styles.buttonText}>Cancel Upload</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.button, { backgroundColor: colors.primary }]} 
+                    onPress={handleEulaAccept}
+                  >
+                    <Text style={styles.buttonText}>I Agree & Upload</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+export default AddNewMedia;

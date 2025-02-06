@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Alert, Linking, Clipboard } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Alert, Linking, Clipboard, FlatList } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { likeImage, deleteImage } from '../lib/appwrite';
 import { useGlobalContext } from '../context/GlobalProvider';
-const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete, onClose, imageId }) => {
+import UserDetailModal from './UserDetailModal'; // Import the new modal component
+
+const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete, onClose, imageId, onUserPress }) => {
   const [likeCount, setLikeCount] = useState(likes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const animatedScale = useRef(new Animated.Value(1)).current;
@@ -156,14 +158,18 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
     uploader: {
       fontSize: 14,
       marginBottom: 8,
+      color: colors.primary
     },
   });
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
+      <TouchableOpacity onPress={() => onUserPress(creator)}>
+        
       <Text style={styles.uploader}>{user.username}</Text>
-      
+      </TouchableOpacity>
+
       <View style={styles.imageContainer}>
         <Image 
           source={{ uri: imageUrl }}

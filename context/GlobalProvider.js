@@ -11,7 +11,7 @@ const GlobalProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [aiInsights, setAiInsights] = useState(null);
+  // const [aiInsights, setAiInsights] = useState(null);
 
   const initializeApp = async () => {
     console.log("Initializing app...");
@@ -23,22 +23,23 @@ const GlobalProvider = ({ children }) => {
         setIsLoggedIn(true);
         setUser(res);
         
-        console.log("Checking for AI insights...");
-        const insights = await checkAndUpdateAIInsights();
-        if (insights) {
-          console.log("AI insights updated:", JSON.stringify(insights));
-          setAiInsights(insights);
-          await AsyncStorage.setItem('AI_INSIGHTS', JSON.stringify(insights));
-          console.log("AI insights stored in AsyncStorage");
-        } else {
-          console.log("No new AI insights available");
-        }
+        // console.log("Checking for AI insights...");
+        // const insights = await checkAndUpdateAIInsights();
+        // if (insights) {
+        //   console.log("AI insights updated:", JSON.stringify(insights));
+        //   setAiInsights(insights);
+        //   await AsyncStorage.setItem('AI_INSIGHTS', JSON.stringify(insights));
+        //   console.log("AI insights stored in AsyncStorage");
+        // } else {
+        //   console.log("No new AI insights available");
+        // }
       } else {
         console.log("No user logged in");
         setIsLoggedIn(false);
         setUser(null);
       }
     } catch (error) {
+      console.error("Error initializing app:", error);
     } finally {
       setIsLoading(false);
       console.log("App initialization complete");
@@ -61,7 +62,7 @@ const GlobalProvider = ({ children }) => {
     setIsLoggedIn(false);
     setUser(null);
     setAiInsights(null);
-    AsyncStorage.removeItem('AI_INSIGHTS');
+    // AsyncStorage.removeItem('AI_INSIGHTS');
   };
 
   useEffect(() => {
@@ -78,14 +79,20 @@ const GlobalProvider = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      initializeApp(); // Refresh the app when the user logs in
+    }
+  }, [isLoggedIn]);
+
   const contextValue = {
     isLoggedIn,
     setIsLoggedIn,
     user,
     setUser,
     isLoading,
-    aiInsights,
-    setAiInsights,
+    // aiInsights,
+    // setAiInsights,
     login,
     logout,
     refreshAllData

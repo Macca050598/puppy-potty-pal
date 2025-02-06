@@ -14,6 +14,7 @@ import AddNewMedia from '../../components/AddNewMedia';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { useTheme } from '../../config/theme';
 import ImageCard from '../../components/ImageCard';
+import UserDetailModal from '../../components/UserDetailModal'; // Import the new modal component
 
 const Social = () => {
   const { user } = useGlobalContext();
@@ -22,7 +23,14 @@ const Social = () => {
   const latestPosts = posts?.slice(0, 5);
   const [isMediaVisible, setIsMediaVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isUserModalVisible, setIsUserModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
+  const handleUserPress = (creator) => {
+    // Fetch user details (e.g., from Appwrite) and set state
+    setSelectedUser(creator);
+    setIsUserModalVisible(true);
+  };
   const handleUploadSuccess = (newPost) => {
     if (typeof mutate === 'function') {
       mutate((currentPosts) => [newPost, ...currentPosts], false);
@@ -128,11 +136,12 @@ const Social = () => {
               $id={item.$id}
               title={item.title}
               imageUrl={item.image}
-              creator={item.creator ? item.creator.username : 'Unknown Creator'}
+              creator={item.creator ? item.creator.username : ''}
               avatar={item.creator ? item.creator.avatar : null}
               colors={colors}
               likes={item.likes}
               onLike={handleLikeImage}
+              onUserPress={handleUserPress}
             />
           )}
           ListHeaderComponent={() => (
@@ -165,6 +174,7 @@ const Social = () => {
                 />
               </View>
             </View>
+            
           )}
           ListEmptyComponent={() => (
             <EmptyState
@@ -174,6 +184,7 @@ const Social = () => {
               subtitleStyle={{ color: colors.tint }}
             />
           )}
+          
           refreshControl={
             <RefreshControl 
               refreshing={refreshing} 
@@ -183,7 +194,11 @@ const Social = () => {
           }
         />
 
-        
+          <UserDetailModal 
+          visible={isUserModalVisible} 
+          user={handleUserPress} 
+          onClose={() => setIsUserModalVisible(false)} 
+        />
           <AddNewMedia
             isVisible={isMediaVisible}
             onClose={() => {
@@ -193,7 +208,7 @@ const Social = () => {
             onUploadSuccess={handleUploadSuccess}
             colors={colors}
           />
-        
+       
 
         <StatusBar backgroundColor={colors.accent} style={colors.text === "#FFFFFF" ? "light" : "dark"} />
       </SafeAreaView>

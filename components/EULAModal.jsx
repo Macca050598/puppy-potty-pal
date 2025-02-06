@@ -95,4 +95,59 @@ const EULAModal = ({ visible, onAccept, onDecline }) => {
               • Users who violate guidelines will face consequences including:{'\n'}
                 - Content removal{'\n'}
                 - Account suspension{'\n'}
-  
+                - Permanent account termination{'\n'}
+              • Serious violations may be reported to relevant authorities
+            </Text>
+
+            <Text style={styles.text}>
+              3. Zero Tolerance Policy{'\n'}
+              • We maintain a strict zero-tolerance policy for objectionable content{'\n'}
+              • Violators will be immediately removed from the platform{'\n'}
+              • Reported content will be promptly removed if found to violate our terms{'\n'}
+              • No warnings will be issued for serious violations{'\n'}
+              • Appeals process is available for account terminations
+            </Text>
+
+            <Text style={styles.text}>
+              4. User Accountability{'\n'}
+              • Users are responsible for all content they post{'\n'}
+              • Users must report violations they encounter{'\n'}
+              • False reporting may result in account penalties{'\n'}
+              • Users must maintain appropriate community standards{'\n'}
+              • Users agree to cooperate with content investigations
+            </Text>
+
+            <Text style={styles.text}>
+              5. Content Storage and Privacy{'\n'}
+              • User-generated content may be stored on our servers{'\n'}
+              • Content may be reviewed by our moderation team{'\n'}
+              • We maintain records of violations and enforcement actions{'\n'}
+              • Privacy policy governs the handling of user data{'\n'}
+              • Users grant us license to store and display their content
+            </Text>
+
+            <Text style={styles.emphasisText}>
+              Failure to comply with these terms will result in immediate action, up to and including permanent account termination.
+            </Text>
+          </ScrollView>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={[styles.button, styles.declineButton]} 
+              onPress={onDecline}
+            >
+              <Text style={styles.buttonText}>Decline</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.acceptButton]} 
+              onPress={onAccept}
+            >
+              <Text style={styles.buttonText}>Accept</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+export default EULAModal;
