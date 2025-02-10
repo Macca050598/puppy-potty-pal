@@ -14,7 +14,7 @@ import AddNewMedia from '../../components/AddNewMedia';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { useTheme } from '../../config/theme';
 import ImageCard from '../../components/ImageCard';
-import UserDetailModal from '../../components/UserDetailModal'; // Import the new modal component
+import UserDetailModal from '../../components/UserDetailModal';
 
 const Social = () => {
   const { user } = useGlobalContext();
@@ -24,11 +24,10 @@ const Social = () => {
   const [isMediaVisible, setIsMediaVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedCreator, setSelectedCreator] = useState(null);
 
   const handleUserPress = (creator) => {
-    // Fetch user details (e.g., from Appwrite) and set state
-    setSelectedUser(creator);
+    setSelectedCreator(creator);
     setIsUserModalVisible(true);
   };
   const handleUploadSuccess = (newPost) => {
@@ -194,20 +193,20 @@ const Social = () => {
           }
         />
 
-          <UserDetailModal 
+        <UserDetailModal 
           visible={isUserModalVisible} 
-          user={handleUserPress} 
           onClose={() => setIsUserModalVisible(false)} 
+          creator={selectedCreator}
         />
-          <AddNewMedia
-            isVisible={isMediaVisible}
-            onClose={() => {
-              console.log('Closing modal');
-              setIsMediaVisible(false);
-            }}
-            onUploadSuccess={handleUploadSuccess}
-            colors={colors}
-          />
+        <AddNewMedia
+          isVisible={isMediaVisible}
+          onClose={() => {
+            console.log('Closing modal');
+            setIsMediaVisible(false);
+          }}
+          onUploadSuccess={handleUploadSuccess}
+          colors={colors}
+        />
        
 
         <StatusBar backgroundColor={colors.accent} style={colors.text === "#FFFFFF" ? "light" : "dark"} />

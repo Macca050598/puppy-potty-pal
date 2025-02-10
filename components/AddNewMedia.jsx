@@ -161,7 +161,7 @@ const submit = async () => {
     },
     uploadContainer: {
       width: '100%',
-      height: 10,
+      height: '70',
       padding: 16,
       backgroundColor: colors.secondary,
       borderRadius: 16,

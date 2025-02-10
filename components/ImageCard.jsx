@@ -98,6 +98,10 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
     );
   };
 
+  const handleUserPress = () => {
+    onUserPress(creator); // Pass the creator to the onUserPress function
+  };
+
   const styles = StyleSheet.create({
     container: {
       flexDirection: 'column',
@@ -165,9 +169,8 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <TouchableOpacity onPress={() => onUserPress(creator)}>
-        
-      <Text style={styles.uploader}>{user.username}</Text>
+      <TouchableOpacity onPress={handleUserPress}>
+        <Text style={styles.uploader}>{creator}</Text>
       </TouchableOpacity>
 
       <View style={styles.imageContainer}>
@@ -198,10 +201,4 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
             color={isLiked ? 'red' : colors.text} 
           />
         </Animated.View>
-        <Text style={styles.likeCount}>{likeCount}</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
-export default ImageCard;
+        <Text style={styles.likeCo
