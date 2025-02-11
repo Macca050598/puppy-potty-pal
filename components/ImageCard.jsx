@@ -3,7 +3,6 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Alert, Linki
 import { Feather } from '@expo/vector-icons';
 import { likeImage, deleteImage } from '../lib/appwrite';
 import { useGlobalContext } from '../context/GlobalProvider';
-import UserDetailModal from './UserDetailModal'; // Import the new modal component
 
 const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDelete, onClose, imageId, onUserPress }) => {
   const [likeCount, setLikeCount] = useState(likes || 0);
@@ -201,4 +200,10 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
             color={isLiked ? 'red' : colors.text} 
           />
         </Animated.View>
-        <Text style={styles.likeCo
+        <Text style={styles.likeCount}>{likeCount}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+export default ImageCard;
