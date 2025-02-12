@@ -12,6 +12,7 @@ const UserDetailModal = ({ visible, onClose, creator }) => {
       if (creator) {
         setLoading(true);
         const posts = await getPosts(creator.$id); // Fetch posts for the selected creator
+        console.log(creator)
         setUserPosts(posts);
         setLoading(false);
       }
@@ -21,11 +22,11 @@ const UserDetailModal = ({ visible, onClose, creator }) => {
   }, [creator]);
 
  
-  const totalLikes = userPosts
-    .filter(post => post.userId === creator.$id) // Filter posts by the selected creator
-    .reduce((acc, post) => acc + (post.likes || 0), 0); // Calculate total likes
+  const usersPosts = userPosts.filter(post => post.creator === creator) // Filter posts by the selected creator
 
-  console.log(user)
+  const totalLikes = userPosts.reduce((acc, post) => acc + (post.likes || 0), 0); // Calculate total likes
+
+  console.log(usersPosts.length)
   
   return (
     <Modal visible={visible} transparent={true}>
@@ -36,11 +37,11 @@ const UserDetailModal = ({ visible, onClose, creator }) => {
           ) : (
             <>
               <View style={styles.avatarContainer}>
-                <Image source={{ uri: creator.avatar || userPosts.avatar }} style={styles.avatar} />
-                <Text style={styles.username}>{userPosts.username || creator}</Text>
+                {/* <Image source={{ uri: creator.avatar }} style={styles.avatar} /> */}
+                <Text style={styles.username}>{creator}</Text>
               
-              <Text style={styles.information}>Images Uploaded: {userPosts.length}</Text>
-              <Text style={styles.information}>Total Likes: {totalLikes}</Text>
+              {/* <Text style={styles.information}>Images Uploaded: {totalLikes.length}</Text>
+              <Text style={styles.information}>Total Likes: {totalLikes}</Text> */}
               </View>
               <FlatList
                 // data={userPosts}

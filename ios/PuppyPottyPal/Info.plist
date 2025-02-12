@@ -81,5 +81,7 @@
     <string>Light</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <false/>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app requires access to your photo library to allow you to upload images for your profile. For example, you can select a photo from your library to personalise your account.</string>
   </dict>
 </plist>
