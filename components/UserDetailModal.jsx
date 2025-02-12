@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, Button, StyleSheet, Image, FlatList } from 'react-native';
+import { View, Text, Modal, Button, StyleSheet, Image, FlatList, Alert } from 'react-native';
 import { getPosts } from '../lib/appwrite'; // Import the function to get posts
 import { useGlobalContext } from '../context/GlobalProvider';
+import { updateUserBlockedList } from '../lib/appwrite'; // Import the function to update the user's blocked list
+
 const UserDetailModal = ({ visible, onClose, creator }) => {
   const [userPosts, setUserPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useGlobalContext();
+  
 
   useEffect(() => {
     const fetchUserPosts = async () => {
       if (creator) {
         setLoading(true);
         const posts = await getPosts(creator.$id); // Fetch posts for the selected creator
-        console.log(creator)
         setUserPosts(posts);
         setLoading(false);
       }
@@ -22,12 +24,40 @@ const UserDetailModal = ({ visible, onClose, creator }) => {
   }, [creator]);
 
  
-  const usersPosts = userPosts.filter(post => post.creator === creator) // Filter posts by the selected creator
+  // const usersPosts = userPosts.filter(post => post.creator === creator) // Filter posts by the selected creator
 
-  const totalLikes = userPosts.reduce((acc, post) => acc + (post.likes || 0), 0); // Calculate total likes
+  // const totalLikes = userPosts.reduce((acc, post) => acc + (post.likes || 0), 0); // Calculate total likes
 
-  console.log(usersPosts.length)
+  const blockUser = async () => {
+    try {
   
+    // Check if the user is trying to block themselves
+      if (user.username === creator) {
+        Alert.alert('Error', 'You cannot block yourself.');
+        return; // Exit the function early
+      }
+  
+      // Call the function to update the user's blocked list
+      await updateUserBlockedList(user.$id, creator);
+      Alert.alert('Success', `${creator} has been blocked. Please refresh the app for this to take effect.`, [
+        {
+          text: 'OK',
+          onPress: () => {
+            // Call a function to refresh the data or navigate back
+            onRefresh(); // Assuming you have a function to refresh the data
+            onClose(); // Close the modal
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error('Error blocking user:', error);
+      Alert.alert('Error', 'Failed to block user. Please try again.');
+    }
+  };
+  const onRefresh = async () => {
+    // Logic to refetch data
+    await fetchData(); // Replace with your data fetching logic
+  };
   return (
     <Modal visible={visible} transparent={true}>
       <View style={styles.modalContainer}>
@@ -55,7 +85,7 @@ const UserDetailModal = ({ visible, onClose, creator }) => {
               />
               <View style={styles.buttonContainer}>
                 {user.username != userPosts.username && (
-                  <Button title="Block User" onPress={() => {/* Add block user functionality */}} color="red" />
+                  <Button title="Block User" onPress={blockUser} color="red" />
                 )}
                 <Button title="Close" onPress={onClose} />
               </View>

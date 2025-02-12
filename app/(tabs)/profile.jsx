@@ -76,7 +76,7 @@ const Profile = () => {
     }
   };
 
-  const totalLikes = posts.reduce((acc, post) => acc + (post.likes || 0), 0);
+  const totalLikes = userPosts.reduce((acc, post) => acc + (post.likes || 0), 0);
   console.log(totalLikes)
   
   return (

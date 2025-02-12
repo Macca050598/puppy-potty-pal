@@ -206,4 +206,4 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
   );
 };
 
-export default ImageCard;
+export defau

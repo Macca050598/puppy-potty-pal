@@ -79,6 +79,18 @@ const Social = () => {
     }
   };
 
+  // Log the BlockedUsers for debugging
+  // console.log('Blocked Users:', user.BlockedUsers);
+  // console.log('Posts:', posts); // Log the entire posts array
+  
+    // Filter out posts from blocked users
+  const filteredPosts = posts.filter(post => {
+    const creatorUsername = post.creator ? post.creator.username : null; // Safely access username
+    const isBlocked = user.BlockedUsers && user.BlockedUsers.includes(creatorUsername);
+    // console.log(`Post Creator: ${creatorUsername}, Is Blocked: ${isBlocked}`); // Log each post's creator and blocked status
+    return !isBlocked; // Only include posts from users not in the blocked list
+  });
+
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.background,
@@ -128,7 +140,7 @@ const Social = () => {
     <AuthenticatedLayout>
       <SafeAreaView style={styles.container}>
         <FlatList
-          data={posts}
+          data={filteredPosts}
           keyExtractor={(item) => item.$id}
           renderItem={({ item }) => (
             <ImageCard
