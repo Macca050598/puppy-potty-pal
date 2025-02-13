@@ -51,7 +51,7 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
   };
 
   const reportImage = async (imageUrl, $id) => {
-    const email = 'support@puppypottypal.com'; // Your email address
+    const email = 'support@puppypottypal.com'; 
     const subject = encodeURIComponent(`Report for Image ID: ${imageUrl}`);
     const body = encodeURIComponent(`Reason: Please state the reason as to why you want to report this image\nI would like to report the following image:\n\nImage ID: \n ${imageUrl}\nImage URL: ${$id}`);
     
@@ -206,4 +206,4 @@ const ImageCard = ({ $id, title, imageUrl, creator, avatar, colors, likes, onDel
   );
 };
 
-export defau
+export default ImageCard;

@@ -73,19 +73,19 @@ const UserDetailModal = ({ visible, onClose, creator }) => {
               {/* <Text style={styles.information}>Images Uploaded: {totalLikes.length}</Text>
               <Text style={styles.information}>Total Likes: {totalLikes}</Text> */}
               </View>
-              <FlatList
-                // data={userPosts}
-                // keyExtractor={(item) => item.$id}
-                // renderItem={({ item }) => (
-                //   <View style={styles.postContainer}>
-                //     <Image source={{ uri: item.image }} style={styles.postImage} />
-                //     <Text>{item.title}</Text>
-                //   </View>
-                // )}
-              />
+              {/* <FlatList
+                data={userPosts}
+                keyExtractor={(item) => item.$id}
+                renderItem={({ item }) => (
+                  <View style={styles.postContainer}>
+                    <Image source={{ uri: item.image }} style={styles.postImage} />
+                    <Text>{item.title}</Text>
+                  </View>
+                )}
+              /> */}
               <View style={styles.buttonContainer}>
                 {user.username != userPosts.username && (
-                  <Button title="Block User" onPress={blockUser} color="red" />
+                  <Button title="Block User" onPress={blockUser} color="red" /> 
                 )}
                 <Button title="Close" onPress={onClose} />
               </View>

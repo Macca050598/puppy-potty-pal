@@ -40,7 +40,11 @@ const Social = () => {
     }
   };
 
-  const handleModalClose = () => {
+  // const handleModalClose = () => {
+  //   setIsMediaVisible(false);
+  // };
+
+   const handleClose = () => {
     setIsMediaVisible(false);
   };
 

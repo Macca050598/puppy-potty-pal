@@ -99,6 +99,5 @@ const SearchPage = () => {
       />
     </SafeAreaView>
   )
-}
-
+};
 export default SearchPage

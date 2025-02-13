@@ -38,6 +38,11 @@ const FAQ = () => {
       question: "What is the 'Next Trip Prediction' feature?",
       answer: "This feature uses AI to analyze your dog's toilet habits and predict when they might need their next trip outside.",
       icon: "clock"
+    },
+    {
+      question: "How do I block someone?",
+      answer: "To block someone, you can click on their name inside the social page and click Block. Then when you refresh your app you won't see their posts anymore.",
+      icon: "help-circle"
     }
   ];
   const handleBackPress = () => {
