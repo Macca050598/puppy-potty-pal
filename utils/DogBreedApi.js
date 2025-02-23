@@ -33,7 +33,7 @@ export const searchBreeds = async (query) => {
       weight: breed.weight.metric
     }));
   } catch (error) {
-    console.error('Error searching breeds:', error);
+    console.error('Error searching breeds of dog:', error);
     throw error;
   }
 };

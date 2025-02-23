@@ -21,7 +21,7 @@ Receive personalized analysis and tips to improve your puppy's toilet training.
 📸 Social Media for Dog Lovers
 Share pictures of your furry friends.
 
-Like and comment on other users' dog photos.
+Like and comment on other users dog photos.
 
 Connect with a community of dog lovers.
 
