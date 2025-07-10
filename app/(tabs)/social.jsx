@@ -89,11 +89,10 @@ const Social = () => {
   
     // Filter out posts from blocked users
   const filteredPosts = posts.filter(post => {
-    const creatorUsername = post.creator ? post.creator.username : null; // Safely access username
+    const creatorUsername = post.creator ? post.creator.username : null;
     const isBlocked = user.BlockedUsers && user.BlockedUsers.includes(creatorUsername);
-    // console.log(`Post Creator: ${creatorUsername}, Is Blocked: ${isBlocked}`); // Log each post's creator and blocked status
-    return !isBlocked; // Only include posts from users not in the blocked list
-  });
+    return !isBlocked;
+  }).reverse(); // Add reverse() here to show newest posts first
 
   const styles = StyleSheet.create({
     container: {

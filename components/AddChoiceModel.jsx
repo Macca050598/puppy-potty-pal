@@ -18,7 +18,10 @@ const ChoiceModal = ({ isVisible, onClose, onChooseToilet, onChooseEating, color
 
               <TouchableOpacity 
                 style={[styles.choiceButton, { backgroundColor: colors.primary }]}
-                onPress={onChooseToilet}
+                onPress={() => {
+                  console.log('Toilet button pressed');
+                  onChooseToilet();
+                }}
               >
                 <Feather name="target" size={24} color={colors.background} />
                 <Text style={[styles.choiceButtonText, { color: colors.background }]}>Toilet Trip</Text>
@@ -26,7 +29,10 @@ const ChoiceModal = ({ isVisible, onClose, onChooseToilet, onChooseEating, color
 
               <TouchableOpacity 
                 style={[styles.choiceButton, { backgroundColor: colors.primary }]}
-                onPress={onChooseEating}
+                onPress={() => {
+                  console.log('Eating button pressed');
+                  onChooseEating();
+                }}
               >
                 <Feather name="coffee" size={24} color={colors.background} />
                 <Text style={[styles.choiceButtonText, { color: colors.background }]}>Eating Event</Text>

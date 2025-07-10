@@ -28,7 +28,7 @@ const AddNewMedia = ({ isVisible, onClose, colors, onUploadSuccess, onRefresh })
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.6,
     });
 
     if(!result.canceled) {

@@ -110,7 +110,7 @@ const NextTripPrediction = ({ selectedDog, colors }) => {
     } else if (date.getDate() === now.getDate()) {
       return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (date.getDate() === tomorrow.getDate()) {
-      return `Tomorrow at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `Later at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else {
       return date.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     }

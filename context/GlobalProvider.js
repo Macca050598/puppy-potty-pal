@@ -3,6 +3,7 @@ import { getCurrentUser } from "../lib/appwrite";
 import { checkAndUpdateAIInsights } from "../services/aiService";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState } from 'react-native';
+import Purchases from 'react-native-purchases';
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -11,6 +12,7 @@ const GlobalProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
   // const [aiInsights, setAiInsights] = useState(null);
 
   const initializeApp = async () => {
@@ -65,8 +67,20 @@ const GlobalProvider = ({ children }) => {
     // AsyncStorage.removeItem('AI_INSIGHTS');
   };
 
+  const restorePurchases = async () => {
+    try {
+      const customerInfo = await Purchases.restorePurchases();
+      setIsPremium(!!customerInfo.entitlements.active['premium']);
+      return customerInfo;
+    } catch (error) {
+      console.error('Failed to restore purchases:', error);
+      setIsPremium(false);
+    }
+  };
+
   useEffect(() => {
     initializeApp();
+    restorePurchases();
 
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (nextAppState === 'active') {
@@ -91,6 +105,8 @@ const GlobalProvider = ({ children }) => {
     user,
     setUser,
     isLoading,
+    isPremium,
+    restorePurchases,
     // aiInsights,
     // setAiInsights,
     login,

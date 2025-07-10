@@ -40,6 +40,18 @@ const userOptionsLayout = () => {
             headerShown: false
           }}
         />
+        <Stack.Screen
+        name="subscription"
+        options={{
+          headerShown: false
+        }}
+        />
+        <Stack.Screen
+        name="exportFile"
+        options={{
+          headerShown: false
+        }}
+        />
     </Stack>
     <StatusBar backgroundColor={colors.accent} style={colors.text === '#FFFFFF' ? 'light' : 'dark'}/>
     </>

@@ -14,6 +14,9 @@ import { useTheme } from '../../config/theme';
 import { Feather } from '@expo/vector-icons';
 import ChoiceModal from '../../components/AddChoiceModel';
 import AddEatingTrip from '../../components/AddEatingTrip';
+import { shouldShowReviewPrompt, requestReview } from '../../utils/reviewPrompt';
+import { showPaywallIfNeeded } from '../../lib/paywall';
+
 const groupEventsByDay = (events) => {
   const grouped = events.reduce((acc, event) => {
     const date = new Date(event.timestamp);
@@ -45,6 +48,26 @@ const Home = () => {
   const [isChoiceModalVisible, setIsChoiceModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Debug useEffect to monitor modal state changes
+  useEffect(() => {
+    console.log('Modal states changed:', {
+      isChoiceModalVisible,
+      isAddTripModalVisible,
+      isAddEatingModalVisible,
+      pendingModal
+    });
+  }, [isChoiceModalVisible, isAddTripModalVisible, isAddEatingModalVisible, pendingModal]);
+
+  useEffect(() => {
+    const checkForReview = async () => {
+      if (await shouldShowReviewPrompt()) {
+        await requestReview();
+      }
+    };
+
+    checkForReview();
+  }, []);
+  
   const useFetchData = () => {
     const fetchDogsAndEvents = useCallback(async () => {
       const userId = user?.$id;
@@ -134,18 +157,44 @@ const Home = () => {
     }
   };
 
+  const [pendingModal, setPendingModal] = useState(null);
+
   const modalActions = {
-    openChoiceModal: () => setIsChoiceModalVisible(true),
-    closeChoiceModal: () => setIsChoiceModalVisible(false),
-    openToiletModal: () => {
+    openChoiceModal: () => {
+      console.log('Opening choice modal');
+      setIsChoiceModalVisible(true);
+    },
+    closeChoiceModal: () => {
+      console.log('Closing choice modal');
       setIsChoiceModalVisible(false);
-      setIsAddTripModalVisible(true);
+    },
+    openToiletModal: () => {
+      console.log('Opening toilet modal');
+      setPendingModal('toilet');
+      setIsChoiceModalVisible(false);
     },
     openEatingModal: () => {
+      console.log('Opening eating modal');
+      setPendingModal('eating');
       setIsChoiceModalVisible(false);
-      setIsAddEatingModalVisible(true);
     }
   };
+
+  // Handle pending modal after choice modal closes
+  useEffect(() => {
+    if (!isChoiceModalVisible && pendingModal) {
+      const timer = setTimeout(() => {
+        if (pendingModal === 'toilet') {
+          setIsAddTripModalVisible(true);
+        } else if (pendingModal === 'eating') {
+          setIsAddEatingModalVisible(true);
+        }
+        setPendingModal(null);
+      }, 400); // Increased delay to ensure modal is fully dismissed
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isChoiceModalVisible, pendingModal]);
 
   const SummaryItem = ({ icon, label, count }) => (
     <View style={styles.summaryItem}>
@@ -203,7 +252,7 @@ const Home = () => {
             <Text style={styles.welcomeText}>Welcome Back,</Text>
             <Text style={styles.companyName}>{user.username}</Text>
           </View>
-          <TouchableOpacity onPress={() => setIsAddDogModalVisible(true)} style={styles.addDogButton}>
+          <TouchableOpacity onPress={handleAddDogPress} style={styles.addDogButton}>
             <Text style={styles.addDogButtonText}>Add Dog</Text>
           </TouchableOpacity>
         </View>
@@ -268,6 +317,20 @@ const Home = () => {
         ))}
       </View>
     );
+  };
+
+  const handleAddDogPress = async () => {
+    if (dogs.length === 0) {
+      // User has no dogs, allow adding the first dog
+      setIsAddDogModalVisible(true);
+    } else {
+      // User already has at least one dog, show the paywall
+      const allowed = await showPaywallIfNeeded({ requiredEntitlementIdentifier: 'premium' });
+      if (allowed) {
+        setIsAddDogModalVisible(true); // Allow adding another dog if subscribed
+      }
+      // else: do nothing or show a message if you want
+    }
   };
 
   const styles = StyleSheet.create({
@@ -502,7 +565,10 @@ const Home = () => {
 
           <ChoiceModal
             isVisible={isChoiceModalVisible}
-            onClose={() => setIsChoiceModalVisible(false)}
+            onClose={() => {
+              console.log('Choice modal close button pressed');
+              setIsChoiceModalVisible(false);
+            }}
             onChooseToilet={modalActions.openToiletModal}
             onChooseEating={modalActions.openEatingModal}
             colors={colors}

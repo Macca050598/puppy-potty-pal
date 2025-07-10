@@ -8,6 +8,7 @@ import { signOut } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import AuthenticatedLayout from '../../components/AuthenticatedLayout';
 import { useTheme } from '../../config/theme';
+import { showPaywallIfNeeded } from '../../lib/paywall';
 
 const OptionItem = ({ icon, title, onPress, textColor, iconColor }) => {
   const { colors } = useTheme();
@@ -106,7 +107,16 @@ const Options = () => {
       title: "Account",
       data: [
         { icon: "edit", title: "Edit Profile", onPress: () => router.push(`/editProfile`) },
-        { icon: "users", title: "Family", onPress: () => router.push(`/family`) },
+        { 
+          icon: "users", 
+          title: "Family", 
+          onPress: async () => {
+            const allowed = await showPaywallIfNeeded({ requiredEntitlementIdentifier: 'premium' });
+            if (allowed) {
+              router.push(`/family`);
+            }
+          }
+        },
       ]
     },
     {
@@ -120,6 +130,13 @@ const Options = () => {
       title: "Data & Analytics",
       data: [
         { icon: "bar-chart-2", title: "Analytics", onPress: () => router.push(`/analytics`) },
+        // { icon: "bar-chart-2", title: "Subscriptions", onPress: () => router.push(`/subscription`) },
+        { icon: "download", title: "Export Data", onPress: async () => {
+          const allowed = await showPaywallIfNeeded({ requiredEntitlementIdentifier: 'premium' });
+          if (allowed) {
+            router.push(`/exportFile`);
+          } 
+        }},
       ]
     },
     {

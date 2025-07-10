@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet, FlatList } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, Alert, StyleSheet, FlatList, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { addDog, getCurrentUser } from '../lib/appwrite';
 import { getAllBreeds, searchBreeds } from '../utils/DogBreedApi';
@@ -184,80 +184,82 @@ const AddNewDog = ({ isVisible, onClose, onDogAdded, colors }) => {
 
   return (
     <Modal visible={isVisible} animationType="fade" transparent={true}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.title}>Add New Dog</Text>
-          
-          <TextInput
-            style={styles.input}
-            placeholder="Dog Name"
-            value={dogData.name}
-            onChangeText={(text) => setDogData(prev => ({ ...prev, name: text }))}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Search Dog Breed"
-            value={dogData.breed}
-            onChangeText={handleBreedSearch}
-            onFocus={() => setShowBreedList(true)}
-          />
-
-          {showBreedList && (
-            <FlatList
-              data={breeds}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => selectBreed(item)}>
-                  <Text style={styles.breedItem}>{item.name}</Text>
-                </TouchableOpacity>
-              )}
-              style={styles.breedList}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.title}>Add New Dog</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Dog Name"
+              value={dogData.name}
+              onChangeText={(text) => setDogData(prev => ({ ...prev, name: text }))}
             />
-          )}
 
-          <TextInput
-            style={styles.input}
-            placeholder="Dog Weight (kg)"
-            value={dogData.weight}
-            onChangeText={(text) => setDogData(prev => ({ ...prev, weight: text }))}
-            keyboardType="numeric"
-          />
-
-          <Text style={[styles.datePickerText, { marginBottom: 5 }]}>Date of Birth:</Text>
-          <TouchableOpacity 
-            style={styles.datePickerButton}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text style={styles.datePickerText}>{dogData.dob.toLocaleDateString()}</Text>
-          </TouchableOpacity>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={dogData.dob}
-              mode="date"
-              display="default"
-              onChange={onChangeDOB}
-              textColor={colors.text}
+            <TextInput
+              style={styles.input}
+              placeholder="Search Dog Breed"
+              value={dogData.breed}
+              onChangeText={handleBreedSearch}
+              onFocus={() => setShowBreedList(true)}
             />
-          )}
 
-          <View style={styles.buttonContainer}>
+            {showBreedList && (
+              <FlatList
+                data={breeds}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => selectBreed(item)}>
+                    <Text style={styles.breedItem}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+                style={styles.breedList}
+              />
+            )}
+
+            <TextInput
+              style={styles.input}
+              placeholder="Dog Weight (kg)"
+              value={dogData.weight}
+              onChangeText={(text) => setDogData(prev => ({ ...prev, weight: text }))}
+              keyboardType="numeric"
+            />
+
+            <Text style={[styles.datePickerText, { marginBottom: 5 }]}>Date of Birth:</Text>
             <TouchableOpacity 
-              style={[styles.button, styles.cancelButton]}
-              onPress={onClose}
+              style={styles.datePickerButton}
+              onPress={() => setShowDatePicker(true)}
             >
-              <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
+              <Text style={styles.datePickerText}>{dogData.dob.toLocaleDateString()}</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.button, styles.addButton]}
-              onPress={handleAddDog}
-            >
-              <Text style={[styles.buttonText, styles.addButtonText]}>Add Dog</Text>
-            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={dogData.dob}
+                mode="date"
+                display="default"
+                onChange={onChangeDOB}
+                textColor={colors.text}
+              />
+            )}
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[styles.button, styles.cancelButton]}
+                onPress={onClose}
+              >
+                <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.button, styles.addButton]}
+                onPress={handleAddDog}
+              >
+                <Text style={[styles.buttonText, styles.addButtonText]}>Add Dog</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
